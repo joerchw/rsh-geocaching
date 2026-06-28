@@ -8,6 +8,8 @@ const DEFAULT_ZOOM = 16;
 
 let map = null;
 let userMarker = null;
+let lastUserLatLng = null;
+let hasCenteredOnUser = false;
 const cacheMarkers = new Map(); // cacheId -> L.Marker
 
 function dot(colorVar, sizePx) {
@@ -52,9 +54,20 @@ export function setCacheMarkers(caches, doneIds, onMarkerClick) {
 
 export function setUserLocation(lat, lon) {
   if (!map) return;
+  lastUserLatLng = [lat, lon];
   if (!userMarker) {
     userMarker = L.marker([lat, lon], { icon: dot('#1e88e5', 18) }).addTo(map);
   } else {
     userMarker.setLatLng([lat, lon]);
   }
+  // Center on the user the first time we get a fix (don't fight later panning).
+  if (!hasCenteredOnUser) {
+    map.setView([lat, lon], 16);
+    hasCenteredOnUser = true;
+  }
+}
+
+// Re-center the map on the user's current position (used when the map tab opens).
+export function focusUser() {
+  if (map && lastUserLatLng) map.setView(lastUserLatLng, map.getZoom());
 }

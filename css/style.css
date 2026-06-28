@@ -91,8 +91,8 @@ main { flex: 1 1 auto; overflow-y: auto; }
 /* Detail */
 .detail-name { font-size: 1.4rem; font-weight: 800; margin: 0 0 0.3rem; }
 .detail-dist { font-size: 3rem; font-weight: 900; color: var(--rsh-blau-dunkel); text-align: center; }
-.detail-arrow { font-size: 4rem; text-align: center; transition: transform 0.2s ease; }
-.detail-map { width: 100%; height: 220px; border-radius: 12px; margin: 0.6rem 0; }
+.detail-arrow { font-size: 2.2rem; text-align: center; transition: transform 0.2s ease; }
+.detail-map { width: 100%; height: 340px; border-radius: 12px; margin: 0.6rem 0; }
 .photo-thumbs { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.6rem; }
 .photo-thumbs img { width: 90px; height: 90px; object-fit: cover; border-radius: 8px; }
 .hint { background: #eef2f6; border-radius: 8px; padding: 0.6rem 0.8rem; font-size: 0.9rem; }

@@ -9,6 +9,7 @@ let lastUserPos = null;   // { lat, lon }
 let lastHeading = 0;      // device heading degrees
 let miniMap = null;       // Leaflet map instance for the detail view
 let miniUserMarker = null;
+let miniFitted = false;   // whether we framed user+target once already
 
 // Called by app.js whenever a new GPS fix arrives.
 export function updateDetailLocation(pos) {
@@ -37,11 +38,14 @@ function targetDot() {
 
 function initMiniMap() {
   if (miniMap) { miniMap.remove(); miniMap = null; miniUserMarker = null; }
+  miniFitted = false;
   const target = [current.latitude, current.longitude];
-  miniMap = L.map('detail-map', { zoomControl: false, attributionControl: false }).setView(target, 16);
+  miniMap = L.map('detail-map', { zoomControl: true, attributionControl: false }).setView(target, 16);
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(miniMap);
   L.marker(target, { icon: targetDot() }).addTo(miniMap);
+  // The container may have just become visible; fix tile sizing once it has layout.
   setTimeout(() => miniMap && miniMap.invalidateSize(), 0);
+  setTimeout(() => miniMap && miniMap.invalidateSize(), 250);
   updateMiniMapUser();
 }
 
@@ -53,7 +57,12 @@ function updateMiniMapUser() {
   } else {
     miniUserMarker.setLatLng(u);
   }
-  miniMap.fitBounds([u, [current.latitude, current.longitude]], { padding: [30, 30], maxZoom: 17 });
+  // Frame both points ONCE; afterwards leave the view alone so the user can
+  // zoom and pan freely without it jumping back on every GPS update.
+  if (!miniFitted) {
+    miniMap.fitBounds([u, [current.latitude, current.longitude]], { padding: [30, 30], maxZoom: 17 });
+    miniFitted = true;
+  }
 }
 
 // Called by app.js whenever device heading changes.
@@ -103,10 +112,8 @@ export async function renderDetail(cache, container, onChanged) {
     <div id="detail-arrow" class="detail-arrow" hidden>⬆️</div>
     <div id="detail-dist" class="detail-dist">wird ermittelt…</div>
     <div id="detail-map" class="detail-map"></div>
-    <label class="btn btn-secondary btn-big" style="text-align:center;display:block">
-      📷 Foto aufnehmen
-      <input id="photo-input" type="file" accept="image/*" capture="environment" hidden />
-    </label>
+    <button id="photo-btn" type="button" class="btn btn-secondary btn-big">📷 Foto aufnehmen</button>
+    <input id="photo-input" type="file" accept="image/*" capture="environment" hidden />
     <div id="photo-thumbs" class="photo-thumbs"></div>
     <div id="codeword-area" style="margin-top:1rem">
       ${done
@@ -123,6 +130,7 @@ export async function renderDetail(cache, container, onChanged) {
   container.querySelector('#detail-back').addEventListener('click', () => onChanged('back'));
 
   const photoInput = container.querySelector('#photo-input');
+  container.querySelector('#photo-btn').addEventListener('click', () => photoInput.click());
   photoInput.addEventListener('change', async () => {
     const file = photoInput.files?.[0];
     if (file) { await addPhoto(cache.id, file); await renderPhotos(); }

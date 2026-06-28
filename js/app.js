@@ -3,7 +3,7 @@ import { distanceMeters, formatDistance } from './geo.js';
 import { renderRules, rulesAccepted, acceptRules } from './rules.js';
 import { getDoneIds } from './progress.js';
 import { watchLocation, watchHeading, requestOrientationPermission } from './location.js';
-import { initMap, refreshMap, setCacheMarkers, setUserLocation } from './map.js';
+import { initMap, refreshMap, setCacheMarkers, setUserLocation, focusUser } from './map.js';
 import { renderDetail, updateDetailLocation, updateDetailHeading } from './detail.js';
 
 const VIEWS = ['rules', 'list', 'map', 'detail'];
@@ -19,7 +19,7 @@ function showView(name) {
   document.querySelectorAll('.nav-btn').forEach((b) =>
     b.classList.toggle('active', b.dataset.view === name));
   document.getElementById('bottom-nav').hidden = name === 'rules';
-  if (name === 'map') refreshMap();
+  if (name === 'map') { refreshMap(); focusUser(); }
 }
 
 function setGpsStatus(text) {
@@ -63,8 +63,8 @@ async function openDetail(cacheId) {
     if (event === 'back') { activeCacheId = null; showView('list'); }
     if (event === 'done') { doneIds = await getDoneIds(); renderList(); refreshMarkers(); }
   });
-  if (userPos) updateDetailLocation(userPos);
   showView('detail');
+  if (userPos) updateDetailLocation(userPos); // after the view is visible, so the map sizes correctly
 }
 
 function refreshMarkers() {
