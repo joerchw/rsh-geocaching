@@ -30,9 +30,9 @@ ist denkbar einfach: ein Link bzw. QR-Code.
 |---|---|
 | Grundlage | HTML + CSS + **Vanilla JavaScript** (kein Build-Werkzeug, keine Toolchain) |
 | App-Typ | PWA (Web App Manifest + Service Worker, „zum Startbildschirm hinzufügen") |
-| Karte | **Leaflet.js** mit OpenStreetMap-Tiles |
-| Offline-Karte | vorab erzeugte Tiles (~2×2 km) im Projekt, vom Service Worker gecacht; Online-OSM-Fallback außerhalb |
-| Standort | `navigator.geolocation` (HTTPS erforderlich) |
+| Karte | **Leaflet.js** mit Online-OpenStreetMap-Tiles (Internet nötig für die Karte) |
+| Offline-Fähigkeit (v1) | Service Worker cached die **App-Shell** (HTML/CSS/JS + `caches.json`); Kartenkacheln sind online (Offline-Tiles → Erweiterung) |
+| Standort | `navigator.geolocation` (HTTPS erforderlich) — Entfernung/Richtung funktionieren ohne Internet |
 | Richtung (optional) | `DeviceOrientation` API (auf iOS mit Erlaubnis-Tipp) |
 | Foto aufnehmen | `<input type="file" accept="image/*" capture="environment">` |
 | Cache-Daten | `caches.json` (statische Datei, von Lehrern editierbar) |
@@ -78,6 +78,8 @@ Stylesheet-Datei und werden nach der Testphase mit den finalen Schulfarben justi
 - **Keine** automatische Helligkeitssteuerung — die Schüler regeln die Bildschirmhelligkeit
   bei Bedarf selbst.
 - **Responsives Layout** für unterschiedliche Bildschirmgrößen; Hochformat als Standard.
+- **Hinweis zur Karte:** Ein kurzer Text macht klar, dass die Karte Internet braucht,
+  Entfernung und Richtung aber immer (auch offline) funktionieren.
 
 ---
 
@@ -112,7 +114,8 @@ Single-Page-App; „Screens" sind Ansichten innerhalb der Seite (kein Neuladen).
 
 - Leaflet-Karte: eigener Standort als blauer Punkt, Cache-Marker (offen/erledigt farblich
   unterscheidbar).
-- Offline-Tiles im Schulbereich (~2×2 km), automatischer Online-OSM-Fallback außerhalb.
+- Online-OSM-Tiles (Internet nötig). Bei fehlendem Netz bleiben die Kacheln leer/grau —
+  Marker, eigener Standort und Entfernung funktionieren weiter.
 - Tippen auf einen Marker → Cache-Detail.
 
 ### 4. Cache-Detail
@@ -168,9 +171,9 @@ Pro Cache-`id`:
 ### Datenfluss
 
 1. Erstes Öffnen → Regeln → Cache-Liste.
-2. `caches.json` wird geladen (und vom Service Worker offline vorgehalten).
+2. `caches.json` wird geladen (und vom Service Worker offline vorgehalten — Teil der App-Shell).
 3. GPS via `navigator.geolocation` (`watchPosition`); Entfernungen werden laufend neu
-   berechnet (Luftlinie, Haversine-Formel).
+   berechnet (Luftlinie, Haversine-Formel) — funktioniert auch ohne Internet.
 4. Cache wählen → Detail zeigt Live-Entfernung (+ Richtungspfeil, falls verfügbar).
 5. Foto aufnehmen → in IndexedDB gespeichert, dem Cache zugeordnet.
 6. Codewort korrekt → Cache als erledigt markiert, Liste/Karte aktualisiert.
@@ -186,16 +189,15 @@ rsh-geocaching/
 │   ├── app.js              # Einstieg, Ansichts-Steuerung (Router)
 │   ├── location.js         # Geolocation, Entfernung (Haversine), Ausrichtung
 │   ├── caches.js           # caches.json laden
-│   ├── map.js              # Leaflet-Karte, Offline-/Online-Tiles
+│   ├── map.js              # Leaflet-Karte, Online-OSM-Tiles
 │   ├── progress.js         # IndexedDB: erledigt + Fotos
 │   ├── codeword.js         # Normalisierung + Prüfung
 │   └── rules.js            # Regeltexte / Start-Ansicht
 ├── data/
 │   └── caches.json         # Cache-Daten (Lehrer pflegen diese)
-├── tiles/                  # vorab erzeugte Offline-Karten-Tiles (~2×2 km)
 ├── img/                    # Logo, Icons, Marker
 ├── manifest.webmanifest    # PWA-Manifest (Name, Icons, Farben)
-└── service-worker.js       # Offline-Cache (App-Shell, Tiles, caches.json)
+└── service-worker.js       # Offline-Cache der App-Shell (HTML/CSS/JS + caches.json)
 ```
 
 ---
@@ -241,7 +243,7 @@ rsh-geocaching/
 | Kein GPS-Signal / Standort verweigert | Hinweistext, Entfernung „wird ermittelt…"; Erklärung, wie man den Zugriff erlaubt |
 | Kamera verweigert / nicht verfügbar | Hinweis; „Gefunden"-Eintrag bleibt ohne Foto möglich |
 | Falsches Codewort | freundlicher Hinweis „Codewort stimmt nicht – schau nochmal auf den Zettel" |
-| Offline + außerhalb des Tile-Bereichs | Karte zeigt leere/graue Tiles; Liste und Entfernung funktionieren weiter |
+| Kein Internet für die Karte | Karte zeigt leere/graue Tiles; Marker, Liste und Entfernung funktionieren weiter |
 | `caches.json` fehlerhaft / nicht ladbar | verständliche Meldung statt „weißer Seite" |
 | Browser ohne Ausrichtungssensor | Richtungspfeil ausgeblendet, Entfernung genügt zur Navigation |
 
@@ -293,6 +295,9 @@ getestet.
 
 ## Zukünftige Erweiterungen (bewusst nicht im ersten Release)
 
+- **Offline-Karten** (~2×2 km um die Schule): vorab erzeugte Tiles, vom Service Worker
+  gecacht, mit Online-Fallback. Erst umsetzen, wenn die Testphase ein echtes Empfangsproblem
+  am Hemberg zeigt (iOS-Speicherlimits beachten).
 - **Serverseitige Codewort-Prüfung** und **zentrale Fortschrittsübersicht** aller Gruppen
   für Lehrer (Backend nötig; ca. 2–3× Mehraufwand: Authentifizierung, Datenschutz für
   Minderjährige, Umgang mit schlechtem WLAN).
@@ -304,7 +309,7 @@ getestet.
 
 ## Offene Punkte für die Umsetzung (kein Blocker fürs Design)
 
-- Genaue **Mittelpunkt-Koordinaten der Schule** und Ausdehnung/Zoomstufen für die
-  Offline-Tiles (~2×2 km) festlegen und Tiles erzeugen.
+- **Start-Kartenausschnitt** festlegen: Mittelpunkt/Zoom, auf den die Karte beim Öffnen
+  zentriert (z. B. Schule), bis ein GPS-Standort vorliegt.
 - Erste echte **Cache-Daten** in `data/caches.json` (durch die Lehrer).
 - Finalen **Hosting-Ort** wählen (Cloudflare Pages für Test; ggf. Schul-Server final).
