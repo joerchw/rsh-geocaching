@@ -44,6 +44,10 @@ export function parseCaches(input) {
 }
 
 export async function loadCaches(url = 'data/caches.json') {
+  const override = localStorage.getItem('rsh_caches_admin');
+  if (override) {
+    return parseCaches(override);
+  }
   const res = await fetch(url);
   if (!res.ok) {
     throw new Error(`caches.json konnte nicht geladen werden (HTTP ${res.status}).`);

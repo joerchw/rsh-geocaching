@@ -1,6 +1,6 @@
 import { loadCaches } from './caches.js';
 import { distanceMeters, formatDistance } from './geo.js';
-import { renderRules, rulesAccepted, acceptRules } from './rules.js';
+import { loadRules, renderRules, rulesAccepted, acceptRules } from './rules.js';
 import { getDoneIds, clearAllProgress } from './progress.js';
 import { watchLocation, watchHeading, requestOrientationPermission } from './location.js';
 import { initMap, refreshMap, setCacheMarkers, setUserLocation, focusUser } from './map.js';
@@ -104,7 +104,8 @@ async function main() {
     b.addEventListener('click', () => showView(b.dataset.view)));
 
   // Rules
-  renderRules(document.getElementById('rules-content'));
+  const ruleSections = await loadRules();
+  renderRules(document.getElementById('rules-content'), ruleSections);
   document.getElementById('rules-accept').addEventListener('click', () => {
     acceptRules();
     showView('list');

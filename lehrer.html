@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RSH Geocaching – Lehrerbereich</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="app-header">
+    <h1>RSH Geocaching</h1>
+    <span style="font-size:0.9rem;opacity:0.9">Lehrerbereich</span>
+  </header>
+
+  <main style="padding:1rem">
+    <!-- Passwort-Screen -->
+    <div id="login-form">
+      <h2 style="margin-bottom:1rem">Anmelden</h2>
+      <label style="display:block;margin-bottom:0.8rem">Passwort
+        <input id="pw-input" type="password" class="form-input"
+               placeholder="Passwort eingeben" autocomplete="current-password">
+      </label>
+      <p id="pw-error" class="error"></p>
+      <button id="btn-login" class="btn btn-primary btn-big">Anmelden</button>
+    </div>
+
+    <!-- Admin-Bereich -->
+    <div id="admin-area" hidden>
+      <nav class="admin-tabs">
+        <button id="tab-caches">Caches</button>
+        <button id="tab-regeln">Regeln</button>
+      </nav>
+      <div id="panel-caches"></div>
+      <div id="panel-regeln" hidden></div>
+    </div>
+  </main>
+
+  <script type="module" src="js/admin.js"></script>
+</body>
+</html>

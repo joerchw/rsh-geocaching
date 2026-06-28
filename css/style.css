@@ -117,3 +117,32 @@ main { flex: 1 1 auto; overflow-y: auto; }
 .error { color: #b00020; font-weight: 700; }
 .rules-section h2 { color: var(--rsh-gruen-dunkel); margin-bottom: 0.2rem; }
 .feedback-ok { color: var(--rsh-gruen-dunkel); font-weight: 800; }
+
+.form-input {
+  display: block;
+  width: 100%;
+  padding: 0.7rem;
+  font-size: 1rem;
+  border: 2px solid #ccc;
+  border-radius: 10px;
+  margin-top: 0.2rem;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+.form-input:focus { border-color: var(--rsh-blau); outline: none; }
+
+.admin-tabs { display: flex; border-bottom: 2px solid #e2e8ee; margin-bottom: 1rem; }
+.admin-tabs button {
+  flex: 1;
+  padding: 0.8rem;
+  border: none;
+  background: none;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--rsh-blau-dunkel);
+  cursor: pointer;
+}
+.admin-tabs button.active {
+  color: var(--rsh-gruen-dunkel);
+  border-bottom: 3px solid var(--rsh-gruen-dunkel);
+}
