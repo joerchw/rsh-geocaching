@@ -86,7 +86,9 @@ async function renderPhotos() {
   const blobs = await getPhotos(current.id);
   for (const blob of blobs) {
     const img = document.createElement('img');
-    img.src = URL.createObjectURL(blob);
+    const url = URL.createObjectURL(blob);
+    img.onload = () => URL.revokeObjectURL(url); // free the blob URL once decoded
+    img.src = url;
     wrap.appendChild(img);
   }
 }
