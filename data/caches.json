@@ -22,5 +22,85 @@
     "latitude": 51.4434368,
     "longitude": 7.5869054,
     "codewort": "Zahn"
+  },
+  {
+    "id": "cache-04",
+    "name": "Volme Brücke",
+    "beschreibung": "Brücke über die Volme.",
+    "latitude": 51.35144,
+    "longitude": 7.484669,
+    "codewort": "Wasser"
+  },
+  {
+    "id": "cache-05",
+    "name": "Blauregen",
+    "beschreibung": "Beim Blauregen.",
+    "latitude": 51.389700,
+    "longitude": 7.701800,
+    "codewort": "Giftig"
+  },
+  {
+    "id": "cache-06",
+    "name": "Mülleimer",
+    "beschreibung": "Am Mülleimer auf dem Schulgelände.",
+    "latitude": 51.389567,
+    "longitude": 7.702367,
+    "codewort": "Magnet"
+  },
+  {
+    "id": "cache-07",
+    "name": "Mensa",
+    "beschreibung": "An der Mensa.",
+    "latitude": 51.389133,
+    "longitude": 7.702683,
+    "codewort": "Snacks"
+  },
+  {
+    "id": "cache-08",
+    "name": "Sporthalle",
+    "beschreibung": "An der Sporthalle.",
+    "latitude": 51.389133,
+    "longitude": 7.702717,
+    "codewort": "Fitness"
+  },
+  {
+    "id": "cache-09",
+    "name": "Fahnenmast",
+    "beschreibung": "Am Fahnenmast.",
+    "latitude": 51.388833,
+    "longitude": 7.703033,
+    "codewort": "Stange"
+  },
+  {
+    "id": "cache-10",
+    "name": "Klettergerüst",
+    "beschreibung": "Am Klettergerüst.",
+    "latitude": 51.388900,
+    "longitude": 7.701883,
+    "codewort": "Orange"
+  },
+  {
+    "id": "cache-11",
+    "name": "Stadion",
+    "beschreibung": "Im Stadion.",
+    "latitude": 51.390000,
+    "longitude": 7.702550,
+    "codewort": "Weitsprung"
+  },
+  {
+    "id": "cache-12",
+    "name": "TTPlatte",
+    "beschreibung": "An der Tischtennisplatte.",
+    "latitude": 51.389267,
+    "longitude": 7.701167,
+    "codewort": "Ping"
+  },
+  {
+    "id": "cache-13",
+    "name": "Rondell",
+    "beschreibung": "Am Rondell.",
+    "latitude": 51.389650,
+    "longitude": 7.700967,
+    "codewort": "Rund"
   }
 ]
