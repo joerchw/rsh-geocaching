@@ -1,23 +1,26 @@
 # RSH Geocaching — Design-Dokument
 
 **Datum:** 2026-06-28
-**Plattform:** Android (nativ, Kotlin), minSdk 24 (Android 7, Geräte ab ~2015)
-**Nutzung:** Projektwoche Geocaching, Realschule am Hemberg (Sideloading per APK, kein Play Store)
-**Vorlage:** orientiert an `D:\Joerg\Projekte\DrumRum` (gleicher Stack, ohne die Netz-Dienste Overpass/OSRM)
+**Plattform:** Progressive Web App (PWA) — plattformunabhängig, läuft im Browser auf
+iOS und Android (Geräte ab ~2015: iPhone 6s+, Android 6/7+)
+**Nutzung:** Projektwoche Geocaching, Realschule am Hemberg
+**Verteilung:** Aufruf per Link / QR-Code im Browser, optional „zum Startbildschirm hinzufügen"
 
 ---
 
 ## Übersicht
 
-RSH Geocaching ist eine Android-App für die Projektwoche Geocaching an der Realschule
-am Hemberg. Lehrer verstecken Caches (Dosen mit einem Zettel) in Schulnähe. Schüler nutzen
-die App, um die Caches zu finden: Sie sehen die Caches als Liste und auf einer Karte,
-navigieren per Live-Entfernung und Richtungspfeil zum Ziel, bestätigen den Fund durch
-Eingabe eines Codeworts vom Zettel in der Dose und legen ein Foto als Erinnerung ab.
+RSH Geocaching ist eine Web-App (PWA) für die Projektwoche Geocaching an der Realschule
+am Hemberg. Lehrer verstecken Caches (Dosen mit einem Zettel) in Schulnähe. Schüler öffnen
+die Seite auf dem Smartphone (per QR-Code), um die Caches zu finden: Sie sehen die Caches
+als Liste und auf einer Karte, navigieren per Live-Entfernung zum Ziel, bestätigen den Fund
+durch Eingabe eines Codeworts vom Zettel in der Dose und legen ein Foto als Erinnerung ab.
 Erledigte Caches werden in der Liste markiert.
 
-Eine spätere iOS-Version ist ein separates Projekt. Cross-Platform (Flutter) würde den
-bewährten DrumRum-Code verwerfen, daher bleibt die App nativ.
+Eine Web-App wurde gegenüber einer nativen Android-App gewählt, weil sie **iOS und Android
+mit einer einzigen Codebasis** abdeckt (der ursprüngliche Wunsch war beide Plattformen),
+ohne App-Store, Apple-Entwicklerkonto oder APK-Sideloading. Die Verteilung an eine Schulklasse
+ist denkbar einfach: ein Link bzw. QR-Code.
 
 ---
 
@@ -25,29 +28,24 @@ bewährten DrumRum-Code verwerfen, daher bleibt die App nativ.
 
 | Bereich | Wahl |
 |---|---|
-| Sprache / UI | Kotlin + Jetpack Compose |
-| Architektur-Muster | MVVM |
-| Karte | OSMDroid — **offline** für ~2×2 km um die Schule, **Online-OSM-Fallback** außerhalb |
-| Standort | FusedLocationProviderClient |
-| Cache-Daten | `caches.json` im App-Bundle (von Lehrern editierbar) |
-| Fortschritt | lokal auf dem Gerät (Jetpack DataStore) |
-| Fotos | app-interner Speicher (`filesDir/photos/<cacheId>/`) |
-| minSdk | 24 (Android 7) — deckt Geräte ab ~2015 ab |
-| compileSdk / targetSdk | 36 (analog DrumRum) |
-| Verteilung | Sideload per APK |
+| Grundlage | HTML + CSS + **Vanilla JavaScript** (kein Build-Werkzeug, keine Toolchain) |
+| App-Typ | PWA (Web App Manifest + Service Worker, „zum Startbildschirm hinzufügen") |
+| Karte | **Leaflet.js** mit OpenStreetMap-Tiles |
+| Offline-Karte | vorab erzeugte Tiles (~2×2 km) im Projekt, vom Service Worker gecacht; Online-OSM-Fallback außerhalb |
+| Standort | `navigator.geolocation` (HTTPS erforderlich) |
+| Richtung (optional) | `DeviceOrientation` API (auf iOS mit Erlaubnis-Tipp) |
+| Foto aufnehmen | `<input type="file" accept="image/*" capture="environment">` |
+| Cache-Daten | `caches.json` (statische Datei, von Lehrern editierbar) |
+| Fortschritt + Fotos | lokal im Browser via **IndexedDB** |
+| Hosting | statische Seite — Cloudflare Pages (Test), optional Schul-Server (final) |
 
-**Bibliotheken** (analog DrumRum):
+**Bewusst weggelassen:** kein Backend, keine Datenbank, keine Anmeldung, keine Frameworks,
+kein Build-Schritt. Die Seite besteht aus statischen Dateien, die auf jeden HTTPS-Webspace
+kopiert werden können. Das hält die App wartbar (auch für Lehrer) und lauffähig auf älteren
+Browsern.
 
-| Bibliothek | Zweck |
-|---|---|
-| OSMDroid | Kartenanzeige (offline + online) |
-| Moshi | JSON-Parsing der `caches.json` |
-| Kotlin Coroutines | Asynchrone Operationen |
-| AndroidX DataStore | Persistenz des Fortschritts |
-| play-services-location | GPS-Standort |
-
-Kein Backend, keine API-Keys, keine Google-Karten-Dienste. Dependency Injection (Hilt)
-wird bewusst weggelassen — zu viel Overhead für den Projektumfang.
+**Browser-Anforderungen:** moderner mobiler Browser (Safari ab iOS 11.3, Chrome/Android-WebView
+ab ~2017). Service Worker und Geolocation sind seit Jahren überall verfügbar.
 
 ---
 
@@ -66,23 +64,26 @@ Die App soll am Internetauftritt und Logo der Realschule am Hemberg angelehnt se
 | Neutral (Logo „am Hemberg") | Grau | `#9E9E9E` |
 | Hintergrund | Weiß | `#FFFFFF` |
 
-Die Farben liegen zentral in der Theme-Datei (`ui/theme/Color.kt`) und werden nach der
-Testphase mit den finalen Schulfarben justiert.
+Die Farben liegen zentral als CSS-Custom-Properties (`:root { --rsh-gruen: … }`) in einer
+Stylesheet-Datei und werden nach der Testphase mit den finalen Schulfarben justiert.
 
 **Lesbarkeit im Freien (Außeneinsatz bei Sonnenlicht):**
 
 - **Hoher Kontrast:** Für Text und Buttons werden die kräftigen/dunklen Varianten
   (Dunkelgrün `#3C8A5B`, Dunkelblau `#2F4D6E`) auf weißem Grund verwendet. Die hellen
-  Logotöne (Pastellblau, Hellgrün) nur als dezente Flächenakzente.
+  Logotöne nur als dezente Flächenakzente.
 - **Große Schrift & große Touch-Flächen:** Wichtige Werte (insbesondere die Entfernung)
   werden sehr groß dargestellt, gut erfassbar mit ausgestrecktem Arm.
-- **Kein Dark Mode** für die Hauptansichten — heller Hintergrund ist draußen besser lesbar.
+- **Heller Hintergrund** (kein Dark Mode) — draußen besser lesbar.
 - **Keine** automatische Helligkeitssteuerung — die Schüler regeln die Bildschirmhelligkeit
   bei Bedarf selbst.
+- **Responsives Layout** für unterschiedliche Bildschirmgrößen; Hochformat als Standard.
 
 ---
 
 ## Screens & Navigation
+
+Single-Page-App; „Screens" sind Ansichten innerhalb der Seite (kein Neuladen).
 
 ```
 [Start/Regeln] → [Cache-Liste] ⇄ [Karte]
@@ -92,33 +93,34 @@ Testphase mit den finalen Schulfarben justiert.
                  [Codewort eingeben → Gefunden!]
 ```
 
-### 1. Start-/Regel-Screen
+### 1. Start-/Regel-Ansicht
 
-- Wird beim App-Start angezeigt.
+- Wird beim ersten Öffnen angezeigt.
 - Drei Abschnitte: **Geocaching-Regeln**, **Sicherheit**, **Umwelt** (Texte s. u.).
-- Button „Verstanden – los geht's". Beim ersten Start Pflicht (Bestätigung wird gemerkt),
-  später über ein Menü erneut aufrufbar.
+- Button „Verstanden – los geht's". Bestätigung wird lokal gemerkt; später über ein Menü
+  erneut aufrufbar.
 
-### 2. Cache-Liste (Home)
+### 2. Cache-Liste (Start nach den Regeln)
 
-- Karten-Einträge je Cache: Name, kurze Beschreibung, **Luftlinien-Entfernung** (groß),
+- Einträge je Cache: Name, kurze Beschreibung, **Luftlinien-Entfernung** (groß),
   Status-Badge (✅ erledigt / ⬜ offen).
 - Sortiert nach Entfernung (nächster zuerst).
 - Umschalter oben: **Liste | Karte**.
-- GPS-Status-Hinweis (aktiv / wird gesucht).
+- GPS-Status-Hinweis (aktiv / wird gesucht / kein Standort).
 
 ### 3. Karte
 
-- OSMDroid-Karte: eigener Standort als blauer Punkt, Cache-Pins (offen/erledigt farblich
+- Leaflet-Karte: eigener Standort als blauer Punkt, Cache-Marker (offen/erledigt farblich
   unterscheidbar).
 - Offline-Tiles im Schulbereich (~2×2 km), automatischer Online-OSM-Fallback außerhalb.
-- Tippen auf einen Pin → Cache-Detail.
+- Tippen auf einen Marker → Cache-Detail.
 
 ### 4. Cache-Detail
 
-- Name, Beschreibung, **große Live-Entfernungsanzeige** und Richtungspfeil zum Ziel.
+- Name, Beschreibung, **große Live-Entfernungsanzeige**; Richtungspfeil zum Ziel, sofern der
+  Browser/das Gerät die Ausrichtung liefert (sonst nur Entfernung).
 - Kleine Karte mit eigenem Standort + Ziel.
-- Button **„Foto aufnehmen"** (Kamera-Intent) — Foto wird dem Cache lokal zugeordnet.
+- Button **„Foto aufnehmen"** — öffnet die Kamera; Foto wird dem Cache lokal zugeordnet.
 - Button **„Gefunden – Codewort eingeben"** → Eingabefeld. Bei korrektem Codewort wird der
   Cache als erledigt markiert (mit Bestätigung/Erfolg-Hinweis).
 - Bereits aufgenommene Fotos des Caches werden hier angezeigt.
@@ -127,7 +129,7 @@ Testphase mit den finalen Schulfarben justiert.
 
 ## Datenmodell & Datenfluss
 
-### `caches.json` (im App-Bundle, von Lehrern editierbar)
+### `caches.json` (statische Datei, von Lehrern editierbar)
 
 ```json
 [
@@ -143,64 +145,92 @@ Testphase mit den finalen Schulfarben justiert.
 ```
 
 - `codewort`: Wird beim „Gefunden"-Eintrag geprüft. Der Vergleich ist **tippfehler-tolerant**:
-  unabhängig von Groß-/Kleinschreibung und führenden/abschließenden Leerzeichen (Normalisierung
-  vor dem Vergleich).
+  unabhängig von Groß-/Kleinschreibung und führenden/abschließenden Leerzeichen.
 
-### Lokaler Fortschritt (DataStore, pro Gerät)
+> **Hinweis Codewort-Sichtbarkeit:** In einer reinen Web-App liegt `caches.json` (inkl.
+> Codewörter) technisch im Browser einsehbar vor. Für eine Schul-Projektwoche ist das
+> akzeptabel — der Zettel in der Dose bleibt der eigentliche Beleg vor Ort, und der Aufwand,
+> die Codewörter aus dem Quelltext zu fischen, ist höher als hinzulaufen. (Eine
+> serverseitige Prüfung wäre die spätere „sichere" Variante, siehe Erweiterungen.)
+
+### Lokaler Fortschritt (IndexedDB, pro Browser/Gerät)
 
 Pro Cache-`id`:
 - `erledigt` (ja/nein)
 - Zeitpunkt der Erledigung
-- Liste der zugehörigen Foto-Dateipfade
+- zugehörige Fotos (als Blob in IndexedDB)
 
 ### Fotos
 
-- Aufnahme über Kamera-Intent, gespeichert im app-internen Speicher
-  (`filesDir/photos/<cacheId>/`), Pfad im Fortschritt vermerkt.
+- Aufnahme über `<input capture>`; das Bild wird als Blob in IndexedDB gespeichert und dem
+  Cache zugeordnet. Optional „Bild speichern" (Download) in die Geräte-Galerie.
 
 ### Datenfluss
 
-1. App-Start → Regeln (falls noch nicht bestätigt) → Cache-Liste.
-2. GPS via FusedLocationProvider als StateFlow; Entfernungen werden laufend neu berechnet
-   (Luftlinie, Haversine-Formel).
-3. Cache wählen → Detail zeigt Live-Entfernung + Richtungspfeil.
-4. Foto aufnehmen → lokal gespeichert, dem Cache zugeordnet.
-5. Codewort korrekt → Cache als erledigt markiert, Liste/Karte aktualisiert.
+1. Erstes Öffnen → Regeln → Cache-Liste.
+2. `caches.json` wird geladen (und vom Service Worker offline vorgehalten).
+3. GPS via `navigator.geolocation` (`watchPosition`); Entfernungen werden laufend neu
+   berechnet (Luftlinie, Haversine-Formel).
+4. Cache wählen → Detail zeigt Live-Entfernung (+ Richtungspfeil, falls verfügbar).
+5. Foto aufnehmen → in IndexedDB gespeichert, dem Cache zugeordnet.
+6. Codewort korrekt → Cache als erledigt markiert, Liste/Karte aktualisiert.
 
-### Architektur (analog DrumRum)
+### Dateistruktur (statische Seite)
 
 ```
-rshgeocaching/
-├── ui/
-│   ├── rules/      # Start-/Regel-Screen
-│   ├── list/       # Cache-Liste
-│   ├── map/        # Karte (OSMDroid)
-│   ├── detail/     # Cache-Detail + Foto + Codewort
-│   └── theme/      # Color.kt, Type.kt, Theme.kt (Schulfarben)
-├── viewmodel/
-│   └── CacheViewModel   # Standort, Caches, Fortschritt, Entfernungen
+rsh-geocaching/
+├── index.html              # App-Shell, alle Ansichten
+├── css/
+│   └── style.css           # Schulfarben (CSS-Variablen), Layout, Lesbarkeit
+├── js/
+│   ├── app.js              # Einstieg, Ansichts-Steuerung (Router)
+│   ├── location.js         # Geolocation, Entfernung (Haversine), Ausrichtung
+│   ├── caches.js           # caches.json laden
+│   ├── map.js              # Leaflet-Karte, Offline-/Online-Tiles
+│   ├── progress.js         # IndexedDB: erledigt + Fotos
+│   ├── codeword.js         # Normalisierung + Prüfung
+│   └── rules.js            # Regeltexte / Start-Ansicht
 ├── data/
-│   ├── location/   # FusedLocationProviderClient
-│   ├── caches/     # caches.json-Loader (Moshi)
-│   ├── progress/   # DataStore (erledigt, Fotos)
-│   └── photos/     # Foto-Speicherung
-└── model/
-    ├── Cache           # id, name, beschreibung, lat, lon, codewort
-    └── CacheProgress   # erledigt, zeitpunkt, fotoPfade
+│   └── caches.json         # Cache-Daten (Lehrer pflegen diese)
+├── tiles/                  # vorab erzeugte Offline-Karten-Tiles (~2×2 km)
+├── img/                    # Logo, Icons, Marker
+├── manifest.webmanifest    # PWA-Manifest (Name, Icons, Farben)
+└── service-worker.js       # Offline-Cache (App-Shell, Tiles, caches.json)
 ```
 
 ---
 
-## Berechtigungen
+## Hosting & Verteilung
 
-| Berechtigung | Zweck |
-|---|---|
-| `ACCESS_FINE_LOCATION` | GPS-Standort für Entfernung und Karte |
-| `CAMERA` | Foto am Fundort aufnehmen |
-| `INTERNET` | Online-OSM-Tiles außerhalb des Offline-Bereichs |
+- **Statische Seite**, daher überall mit HTTPS hostbar.
+- **Testphase:** Cloudflare Pages (kostenlos, HTTPS, schnelles CDN). Alternativen:
+  GitHub Pages, Netlify, Vercel.
+- **Final (optional):** Schul-Server `rsamhemberg.de`, falls HTTPS-Webspace verfügbar — dann
+  bleiben alle Inhalte „im Haus".
+- **HTTPS ist Pflicht** (Geolocation und Service Worker funktionieren nur über HTTPS; alle
+  genannten Hoster liefern es kostenlos).
+- **Verteilung an die Klasse:** QR-Code auf die URL; Schüler öffnen ihn und fügen die Seite
+  optional zum Startbildschirm hinzu.
 
-Berechtigungen werden beim ersten Bedarf abgefragt (Standort beim Start, Kamera bei der
-ersten Fotoaufnahme).
+---
+
+## Datenschutz
+
+- Kein Backend, keine Datenbank, keine Anmeldung.
+- Fotos und Fortschritt verbleiben **ausschließlich lokal** im Browser (IndexedDB) des
+  Schülergeräts; es werden **keine personenbezogenen Daten übertragen**.
+- Einzige externe Anfragen: OpenStreetMap-Tiles (nur außerhalb des Offline-Bereichs).
+- Das ist datenschutztechnisch besonders unkritisch — relevant bei Minderjährigen.
+
+---
+
+## Berechtigungen (Browser-Abfragen)
+
+| Abfrage | Zweck | Zeitpunkt |
+|---|---|---|
+| Standort | GPS für Entfernung und Karte | beim Start der Suche |
+| Kamera | Foto am Fundort | bei erster Fotoaufnahme |
+| Bewegungssensoren (iOS) | Richtungspfeil (optional) | bei erster Nutzung des Pfeils |
 
 ---
 
@@ -208,24 +238,26 @@ ersten Fotoaufnahme).
 
 | Situation | Verhalten |
 |---|---|
-| Kein GPS-Signal | Hinweistext in Liste/Detail, Entfernung „wird ermittelt…" |
-| GPS-Berechtigung verweigert | Erklärungstext + Button zu den App-Einstellungen |
-| Kamera-Berechtigung verweigert | Hinweis, „Gefunden"-Eintrag bleibt ohne Foto möglich |
-| Falsches Codewort | Freundlicher Hinweis „Codewort stimmt nicht – schau nochmal auf den Zettel" |
-| Offline + außerhalb des Tile-Bereichs ohne Netz | Karte zeigt leere/graue Tiles, Liste und Entfernung funktionieren weiter |
-| `caches.json` fehlerhaft | Fehlermeldung beim Start (für Lehrer/Entwickler), saubere statt Absturz |
+| Kein GPS-Signal / Standort verweigert | Hinweistext, Entfernung „wird ermittelt…"; Erklärung, wie man den Zugriff erlaubt |
+| Kamera verweigert / nicht verfügbar | Hinweis; „Gefunden"-Eintrag bleibt ohne Foto möglich |
+| Falsches Codewort | freundlicher Hinweis „Codewort stimmt nicht – schau nochmal auf den Zettel" |
+| Offline + außerhalb des Tile-Bereichs | Karte zeigt leere/graue Tiles; Liste und Entfernung funktionieren weiter |
+| `caches.json` fehlerhaft / nicht ladbar | verständliche Meldung statt „weißer Seite" |
+| Browser ohne Ausrichtungssensor | Richtungspfeil ausgeblendet, Entfernung genügt zur Navigation |
 
 ---
 
 ## Testing
 
-Reine Kotlin-Unit-Tests (JUnit):
+JavaScript-Unit-Tests (z. B. mit einem leichten Test-Runner ohne Build-Zwang) für die
+plattformunabhängige Logik:
 
 1. **Codewort-Prüfung** — Normalisierung (Groß-/Kleinschreibung, Leerzeichen), korrekt/falsch.
 2. **Entfernungsberechnung** — Haversine-Formel gegen bekannte Referenzwerte.
-3. **caches.json-Parser** — gültige und ungültige Eingaben.
+3. **caches.json-Verarbeitung** — gültige und ungültige Eingaben.
 
-UI, GPS, Kamera und die Offline-/Online-Kartenumschaltung werden manuell auf dem Gerät
+Karte, GPS, Kamera, Offline-Verhalten und die iOS-Eigenheiten (Sensor-Erlaubnis,
+Speicher) werden manuell auf echten Geräten (mind. je ein iOS- und ein Android-Gerät)
 getestet.
 
 ---
@@ -261,9 +293,18 @@ getestet.
 
 ## Zukünftige Erweiterungen (bewusst nicht im ersten Release)
 
-- **Zentrale Serverspeicherung** mit Fortschrittsübersicht aller Gruppen für Lehrer
-  (ca. 2–3× Mehraufwand: Backend, Authentifizierung, Datenschutz für Minderjährige,
-  Umgang mit schlechtem WLAN).
+- **Serverseitige Codewort-Prüfung** und **zentrale Fortschrittsübersicht** aller Gruppen
+  für Lehrer (Backend nötig; ca. 2–3× Mehraufwand: Authentifizierung, Datenschutz für
+  Minderjährige, Umgang mit schlechtem WLAN).
 - **Lehrer-Alarm / SOS-Funktion** — Unterstützung anfordern bei Verlaufen oder Unfall.
-- **Caches per URL nachladen** — `caches.json` ohne neues APK aktualisierbar.
-- **iOS-Version** als separates Projekt.
+- **Caches per Server pflegen** — `caches.json` zentral aktualisierbar ohne neues Deploy.
+- **Native App** (Android/iOS), falls später tiefere Geräteintegration gewünscht ist.
+
+---
+
+## Offene Punkte für die Umsetzung (kein Blocker fürs Design)
+
+- Genaue **Mittelpunkt-Koordinaten der Schule** und Ausdehnung/Zoomstufen für die
+  Offline-Tiles (~2×2 km) festlegen und Tiles erzeugen.
+- Erste echte **Cache-Daten** in `data/caches.json` (durch die Lehrer).
+- Finalen **Hosting-Ort** wählen (Cloudflare Pages für Test; ggf. Schul-Server final).
