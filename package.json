@@ -1,0 +1,10 @@
+{
+  "name": "rsh-geocaching",
+  "version": "1.0.0",
+  "description": "Geocaching-PWA für die Projektwoche der Realschule am Hemberg",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "node --test"
+  }
+}

@@ -1,0 +1,18 @@
+[
+  {
+    "id": "cache-01",
+    "name": "Beispiel: Der alte Baum",
+    "beschreibung": "Suche bei der großen Eiche am Rand des Schulhofs.",
+    "latitude": 51.4458,
+    "longitude": 7.6794,
+    "codewort": "Eichhörnchen"
+  },
+  {
+    "id": "cache-02",
+    "name": "Beispiel: Versteckte Bank",
+    "beschreibung": "Schau unter der Holzbank im Park.",
+    "latitude": 51.4471,
+    "longitude": 7.6810,
+    "codewort": "Specht"
+  }
+]
