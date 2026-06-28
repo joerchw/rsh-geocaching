@@ -33,7 +33,7 @@ bewährten DrumRum-Code verwerfen, daher bleibt die App nativ.
 | Fortschritt | lokal auf dem Gerät (Jetpack DataStore) |
 | Fotos | app-interner Speicher (`filesDir/photos/<cacheId>/`) |
 | minSdk | 24 (Android 7) — deckt Geräte ab ~2015 ab |
-| targetSdk | aktuell (analog DrumRum) |
+| compileSdk / targetSdk | 36 (analog DrumRum) |
 | Verteilung | Sideload per APK |
 
 **Bibliotheken** (analog DrumRum):
