@@ -1,7 +1,7 @@
 import { loadCaches } from './caches.js';
 import { distanceMeters, formatDistance } from './geo.js';
 import { renderRules, rulesAccepted, acceptRules } from './rules.js';
-import { getDoneIds } from './progress.js';
+import { getDoneIds, clearAllProgress } from './progress.js';
 import { watchLocation, watchHeading, requestOrientationPermission } from './location.js';
 import { initMap, refreshMap, setCacheMarkers, setUserLocation, focusUser } from './map.js';
 import { renderDetail, updateDetailLocation, updateDetailHeading } from './detail.js';
@@ -24,6 +24,13 @@ function showView(name) {
 
 function setGpsStatus(text) {
   document.getElementById('gps-status').textContent = text;
+}
+
+function updateCoordsOverlay(pos) {
+  const el = document.getElementById('user-coords');
+  if (!el) return;
+  el.textContent = `${pos.lat.toFixed(6)}, ${pos.lon.toFixed(6)}`;
+  el.hidden = false;
 }
 
 function renderList() {
@@ -77,6 +84,7 @@ function startGps() {
       userPos = pos;
       setGpsStatus('GPS aktiv');
       setUserLocation(pos.lat, pos.lon);
+      updateCoordsOverlay(pos);
       renderList();
       if (activeCacheId) updateDetailLocation(pos);
     },
@@ -102,6 +110,16 @@ async function main() {
     showView('list');
   });
 
+  document.getElementById('rules-reset').addEventListener('click', async () => {
+    const input = prompt('Zum Zurücksetzen "reset" eingeben:');
+    if (input === null || input.trim().toLowerCase() !== 'reset') return;
+    await clearAllProgress();
+    doneIds = new Set();
+    renderList();
+    refreshMarkers();
+    showView('list');
+  });
+
   // Load caches
   try {
     caches = await loadCaches();
@@ -112,6 +130,20 @@ async function main() {
 
   doneIds = await getDoneIds();
   initMap('map');
+
+  // Tap coords overlay to copy to clipboard.
+  const coordsEl = document.getElementById('user-coords');
+  if (coordsEl) {
+    coordsEl.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(coordsEl.textContent);
+        coordsEl.classList.add('copied');
+        const orig = coordsEl.textContent;
+        coordsEl.textContent = 'Kopiert!';
+        setTimeout(() => { coordsEl.textContent = orig; coordsEl.classList.remove('copied'); }, 1200);
+      } catch { /* clipboard not available */ }
+    });
+  }
   refreshMarkers();
   renderList();
   startGps();

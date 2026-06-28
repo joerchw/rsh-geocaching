@@ -36,8 +36,26 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
 
 main { flex: 1 1 auto; overflow-y: auto; }
 .view { padding: 1rem; }
-#view-map { padding: 0; height: 100%; }
+#view-map { padding: 0; height: 100%; position: relative; }
 #map { width: 100%; height: 100%; min-height: 60vh; }
+
+.coords-overlay {
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(47, 77, 110, 0.88);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 0.5rem 1.2rem;
+  border-radius: 20px;
+  white-space: nowrap;
+  z-index: 1000;
+  cursor: pointer;
+  user-select: none;
+}
+.coords-overlay.copied { background: rgba(60, 138, 91, 0.92); }
 
 .btn {
   display: inline-block;

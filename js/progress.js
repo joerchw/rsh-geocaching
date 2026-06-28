@@ -107,6 +107,30 @@ export async function addPhoto(cacheId, blob) {
   }
 }
 
+export async function clearAllProgress() {
+  try {
+    if (useMemory) {
+      memory.progress.clear();
+      memory.photos = [];
+      return;
+    }
+    const db = await openDb();
+    await Promise.all([
+      new Promise((res, rej) => {
+        const r = tx(db, STORE_PROGRESS, 'readwrite').clear();
+        r.onsuccess = res; r.onerror = () => rej(r.error);
+      }),
+      new Promise((res, rej) => {
+        const r = tx(db, STORE_PHOTOS, 'readwrite').clear();
+        r.onsuccess = res; r.onerror = () => rej(r.error);
+      })
+    ]);
+  } catch {
+    memory.progress.clear();
+    memory.photos = [];
+  }
+}
+
 export async function getPhotos(cacheId) {
   try {
     if (useMemory) return memory.photos.filter((p) => p.cacheId === cacheId).map((p) => p.blob);

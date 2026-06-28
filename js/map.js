@@ -3,7 +3,7 @@
 // Uses divIcon markers so no Leaflet image assets are required.
 
 // Default center until a GPS fix arrives — set to the school. ADJUST before the project week.
-const DEFAULT_CENTER = [51.4458, 7.6794];
+const DEFAULT_CENTER = [51.3890, 7.7025];
 const DEFAULT_ZOOM = 16;
 
 let map = null;
@@ -29,6 +29,25 @@ export function initMap(elementId) {
     maxZoom: 19,
     attribution: '© OpenStreetMap'
   }).addTo(map);
+
+  const NorthArrow = L.Control.extend({
+    options: { position: 'topright' },
+    onAdd() {
+      const div = L.DomUtil.create('div', '');
+      div.style.cssText = 'pointer-events:none;line-height:0;margin:8px;';
+      div.innerHTML = `<svg viewBox="0 0 40 40" width="38" height="38" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="20" cy="20" r="19" fill="rgba(255,255,255,0.88)" stroke="#ccc" stroke-width="1"/>
+        <text x="20" y="9.5" text-anchor="middle" font-size="9" font-weight="800"
+              fill="#c0392b" font-family="system-ui,sans-serif">N</text>
+        <polygon points="20,12 15,22 25,22" fill="#c0392b"/>
+        <polygon points="20,36 15,22 25,22" fill="#aaa"/>
+        <circle cx="20" cy="22" r="2.5" fill="#fff" stroke="#777" stroke-width="1.2"/>
+      </svg>`;
+      return div;
+    }
+  });
+  new NorthArrow().addTo(map);
+
   return map;
 }
 

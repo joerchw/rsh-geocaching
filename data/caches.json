@@ -51,16 +51,16 @@
     "id": "cache-07",
     "name": "Mensa",
     "beschreibung": "An der Mensa.",
-    "latitude": 51.389133,
-    "longitude": 7.702683,
+    "latitude": 51.38914,
+    "longitude": 7.702812,
     "codewort": "Snacks"
   },
   {
     "id": "cache-08",
     "name": "Sporthalle",
     "beschreibung": "An der Sporthalle.",
-    "latitude": 51.389133,
-    "longitude": 7.702717,
+    "latitude": 51.3891428,
+    "longitude": 7.7028122,
     "codewort": "Fitness"
   },
   {
