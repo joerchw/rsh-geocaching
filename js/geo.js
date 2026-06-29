@@ -29,3 +29,12 @@ export function formatDistance(meters) {
   if (meters < 1000) return `${Math.round(meters)} m`;
   return `${(meters / 1000).toFixed(2).replace('.', ',')} km`;
 }
+
+// Smallest signed rotation (degrees, -180..180) to bring `current` onto `target`.
+// Used to rotate the direction arrow the short way instead of spinning back
+// ~359° when the bearing wraps across 0°.
+export function angleDelta(target, current) {
+  // Normalize current to 0..360 to handle unwrapped angles (e.g., 730° → 10°)
+  const normalizedCurrent = ((current % 360) + 360) % 360;
+  return ((target - normalizedCurrent + 540) % 360) - 180;
+}
