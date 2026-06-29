@@ -7,3 +7,6 @@ Thumbs.db
 
 # Node (none installed, but guard anyway)
 node_modules/
+
+# Brainstorming visual-companion mockups
+.superpowers/
