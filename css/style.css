@@ -25,7 +25,10 @@ html, body {
   line-height: 1.4;
 }
 
-body { display: flex; flex-direction: column; min-height: 100vh; }
+/* `dvh` = dynamic viewport height: matches the *visible* area so bottom:0 content
+   (e.g. .nav-botbar) sits above the mobile browser's bottom toolbar, not behind it.
+   The 100vh line is a fallback for browsers without dvh support. */
+body { display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; }
 
 .app-header {
   background: var(--rsh-gruen-dunkel);
@@ -201,7 +204,8 @@ main { flex: 1 1 auto; overflow-y: auto; }
 .nav-botbar {
   position: absolute; left: 0; right: 0; bottom: 0; z-index: 1000;
   display: flex; align-items: center; justify-content: space-between;
-  padding: 0.6rem 0.9rem;
+  /* Extra bottom padding keeps the buttons clear of a notch / home indicator. */
+  padding: 0.6rem 0.9rem calc(0.6rem + env(safe-area-inset-bottom, 0px));
   background: rgba(255, 255, 255, 0.94);
   box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.18);
 }

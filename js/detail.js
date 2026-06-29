@@ -90,6 +90,10 @@ function updateTrail() {
 
 function maybeFit() {
   if (fitted || !map || !lastUserPos || !current) return;
+  // The map is created while #view-detail is still display:none, so Leaflet's
+  // cached size can be stale (0×0) at fit time. Recompute it first, otherwise
+  // fitBounds frames against a wrong viewport and the zoom looks off.
+  map.invalidateSize();
   map.fitBounds([[lastUserPos.lat, lastUserPos.lon], [current.latitude, current.longitude]],
     { padding: [50, 50], maxZoom: 17 });
   fitted = true;
@@ -111,7 +115,9 @@ function renderArrow() {
   // Accumulate the continuous angle so the arrow always rotates the short way.
   arrowAngle += angleDelta(desired, arrowAngle);
   el.style.transform = `rotate(${arrowAngle}deg)`;
-  el.hidden = false;
+  // NB: `el` is an <svg>; SVGElement does not reflect the `hidden` IDL property,
+  // so `el.hidden = false` would NOT remove the attribute. Toggle it explicitly.
+  el.removeAttribute('hidden');
 }
 
 // Called by app.js whenever a new GPS fix arrives.
@@ -219,7 +225,7 @@ export async function renderDetail(cache, onChangedCb) {
 
   document.getElementById('nav-name').textContent = cache.name;
   document.getElementById('nav-dist').textContent = '…';
-  document.getElementById('nav-arrow').hidden = true;
+  document.getElementById('nav-arrow').setAttribute('hidden', ''); // <svg>: see renderArrow
 
   const pop = document.getElementById('nav-info-pop');
   pop.innerHTML = `<button class="nav-info-close" type="button" aria-label="Schließen">×</button>
