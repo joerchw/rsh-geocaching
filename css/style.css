@@ -10,6 +10,10 @@
 
 * { box-sizing: border-box; }
 
+/* The `hidden` attribute must win even over elements styled `display: flex`
+   (e.g. .app-header, .bottom-nav, .log-window); without this they stay visible. */
+[hidden] { display: none !important; }
+
 html, body {
   margin: 0;
   padding: 0;
