@@ -18,7 +18,9 @@ function showView(name) {
   }
   document.querySelectorAll('.nav-btn').forEach((b) =>
     b.classList.toggle('active', b.dataset.view === name));
-  document.getElementById('bottom-nav').hidden = name === 'rules';
+  // Detail is full-screen: hide the app header and bottom nav so the map fills.
+  document.querySelector('.app-header').hidden = name === 'detail';
+  document.getElementById('bottom-nav').hidden = name === 'rules' || name === 'detail';
   if (name === 'map') { refreshMap(); focusUser(); }
 }
 
@@ -66,7 +68,7 @@ async function openDetail(cacheId) {
   activeCacheId = cacheId;
   const cache = caches.find((c) => c.id === cacheId);
   await requestOrientationPermission();
-  await renderDetail(cache, document.getElementById('detail-content'), async (event) => {
+  await renderDetail(cache, async (event) => {
     if (event === 'back') { activeCacheId = null; showView('list'); }
     if (event === 'done') { doneIds = await getDoneIds(); renderList(); refreshMarkers(); }
   });
