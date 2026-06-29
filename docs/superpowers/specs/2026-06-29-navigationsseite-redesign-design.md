@@ -20,18 +20,24 @@ Die Übersichtsansichten (Liste, Gesamtkarte, Regeln) bleiben unverändert.
 | E | Linie vom aktuellen Standort zum Cache (Luftlinie) | Karten-Feature |
 | F | Seit Öffnen des Caches zurückgelegter Weg auf der Karte | Karten-Feature |
 | G | „Log"-Button öffnet Vollbild-Fenster: Foto, Codewort, Prüfen → Gefunden | Layout/Flow |
+| H | Overlay-Buttons auf der Karte: Zoom + / Zoom − / Zentrieren auf Standort | Karten-Bedienung |
+| I | Info-Button (i) in der oberen Leiste zeigt die Cache-Beschreibung | Karten-Bedienung |
 
 ## Layout (D)
 
 Vollbild-Karte. Darüber zwei durchgehende, leicht transparente Leisten (`rgba(255,255,255,.94)`):
 
-- **Obere Leiste:** Cachename (links, bündig, gekürzt mit Ellipsis) · Entfernung · Richtungspfeil (rechts).
+- **Obere Leiste:** Cachename (links, bündig, gekürzt mit Ellipsis) · Entfernung · Richtungspfeil · Info-Button (i) (rechts).
 - **Untere Leiste:** „‹ Zurück" (links) · grüner „Log"-Button (rechts).
 - **Dazwischen:** die Karte im Vollbild mit Luftlinie (E) und zurückgelegtem Weg (F).
+
+Am rechten Kartenrand (zwischen den Leisten) liegen drei runde Overlay-Buttons übereinander (siehe H).
 
 Die globale App-Kopfzeile (`.app-header`) und die globale untere Navigation (`.bottom-nav`) werden **in der Detailansicht ausgeblendet**, damit die Karte wirklich den Bildschirm füllt. Sie erscheinen wieder, sobald man über „Zurück" zur Liste/Karte wechselt. Beim Verlassen der Detailansicht wird die Heading-Anzeige nicht mehr benötigt.
 
 Der Richtungspfeil ist eine **SVG-Pfeilform** (kräftige Farbe, weißer Rand), kein Emoji – Emojis werden nicht zuverlässig gerendert.
+
+**Info-Button (i):** rechts in der oberen Leiste. Ein Tipp öffnet ein kleines Overlay/Dialog mit der **Cache-Beschreibung/dem Hinweis**, sodass der Tipp während der Suche jederzeit abrufbar ist, ohne die Karte dauerhaft zu verdecken. Erneutes Tippen bzw. ein Schließen-„×" blendet es wieder aus.
 
 ## Kompass-Fix (A) – absolute Nordausrichtung
 
@@ -64,6 +70,15 @@ Beim Öffnen der Navigationsseite startet eine **leere** Spur. Jeder neue GPS-Fi
 
 Optional zur Vermeidung von Zacken durch GPS-Rauschen: nur Punkte aufnehmen, die mehr als wenige Meter vom letzten entfernt sind (kleiner Schwellwert, z. B. 3 m). Wird in der Umsetzung als einfache Hilfsfunktion ergänzt.
 
+## Karten-Bedienelemente (H)
+
+Drei runde Overlay-Buttons am rechten Kartenrand, vertikal gestapelt oberhalb der unteren Leiste:
+
+- **Zoom + / Zoom −:** rufen `map.zoomIn()` / `map.zoomOut()` auf. Die eingebaute Leaflet-Zoomsteuerung (`zoomControl`) wird abgeschaltet, damit Stil und Position zu den übrigen Overlays passen.
+- **Zentrieren auf Standort:** schwenkt die Karte auf die aktuelle Nutzerposition (`setView(userLatLng, …)` bei aktuellem Zoom). Ist noch kein GPS-Fix vorhanden, ist der Button inaktiv/ohne Wirkung.
+
+Einheitlicher Stil mit den übrigen Overlays (heller, halbtransparenter Hintergrund, Schatten), groß genug für Finger (Touch-Targets ≈ 44 px).
+
 ## Log-Fenster (G)
 
 Der „Log"-Button öffnet eine **Vollbild-Ansicht** über der Karte mit eigenem „‹ Zurück"-Button. Inhalt:
@@ -71,14 +86,14 @@ Der „Log"-Button öffnet eine **Vollbild-Ansicht** über der Karte mit eigenem
 1. **Foto aufnehmen** (vorhandener Datei-Input mit `capture="environment"`), darunter die Miniaturansichten bereits aufgenommener Fotos.
 2. **Codewort vom Zettel** (Texteingabe).
 3. **Prüfen → Gefunden** (Button). Bei Erfolg: `markDone`, Erfolgsmeldung („✅ Cache gefunden!") **bleibt im Log-Fenster stehen**; der Nutzer schließt es selbst über „Zurück". Bei Fehleingabe: Hinweistext, Fenster bleibt offen.
-4. Die Cache-Beschreibung (Hinweis/Beschreibung) wird im Log-Fenster oben angezeigt, da auf der Vollbild-Karte dafür kein Platz ist.
+Die Cache-Beschreibung wird **nicht** im Log-Fenster gezeigt, sondern ist über den Info-Button (i) in der oberen Leiste der Navigationskarte erreichbar (siehe Layout).
 
 Nach „Zurück" landet man wieder auf der Navigationskarte. Ist der Cache bereits gefunden, zeigt das Log-Fenster den Gefunden-Zustand (Erfolgsmeldung + Fotos) statt der Eingabefelder. Beim Zurückkehren zur Übersicht wird der Cache wie bisher als gefunden markiert (Liste/Gesamtkarte aktualisieren sich über den vorhandenen `onChanged('done')`-Mechanismus).
 
 ## Komponenten & Datenfluss
 
 - **`index.html`:** Detail-Ansicht erhält Vollbild-Karten-Container plus obere/untere Leiste; separater Container/Markup für das Log-Vollbild-Fenster.
-- **`js/detail.js`:** Aufbau der zwei Leisten; Pfeil-Rotation (B); `fitBounds` (C); Luftlinie (E); Spur-Aufzeichnung (F); Öffnen/Schließen und Inhalt des Log-Fensters (G). Erhält weiterhin GPS- und Heading-Updates über `updateDetailLocation` / `updateDetailHeading`.
+- **`js/detail.js`:** Aufbau der zwei Leisten; Pfeil-Rotation (B); `fitBounds` (C); Luftlinie (E); Spur-Aufzeichnung (F); Öffnen/Schließen und Inhalt des Log-Fensters (G); Overlay-Buttons Zoom/Zentrieren (H). Erhält weiterhin GPS- und Heading-Updates über `updateDetailLocation` / `updateDetailHeading`.
 - **`js/location.js`:** absolute Heading-Quelle (A).
 - **`js/app.js`:** blendet `.app-header` und `.bottom-nav` beim Wechsel in/aus der Detailansicht ein/aus.
 - **`css/style.css`:** Stile für Vollbild-Karte, Leisten, Pfeil, Log-Fenster.
@@ -96,7 +111,3 @@ Nach „Zurück" landet man wieder auf der Navigationskarte. Ist der Cache berei
 - Keine Routenführung über Wege (nur Luftlinie).
 - Keine Änderungen an Liste, Gesamtkarte oder Regeln.
 - Kein Umbau des Foto-/Codewort-Speichers (`progress.js` bleibt wie er ist).
-
-## Offene Punkte zur Bestätigung
-
-- Cache-Beschreibung im Log-Fenster statt auf der Navigationskarte – ist das ok, oder soll der Hinweis während der Suche sichtbar bleiben (z. B. antippbar in der oberen Leiste)?
