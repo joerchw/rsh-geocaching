@@ -38,3 +38,17 @@ export function angleDelta(target, current) {
   const normalizedCurrent = ((current % 360) + 360) % 360;
   return ((target - normalizedCurrent + 540) % 360) - 180;
 }
+
+// Turns a DeviceOrientation-like event into an absolute compass heading
+// (0 = north, clockwise) or null if no absolute reading is available.
+// iOS exposes webkitCompassHeading (already absolute). Android only gives a
+// trustworthy north reference when event.absolute === true.
+export function normalizeHeading(e) {
+  if (typeof e.webkitCompassHeading === 'number' && !Number.isNaN(e.webkitCompassHeading)) {
+    return e.webkitCompassHeading;
+  }
+  if (e.absolute === true && typeof e.alpha === 'number' && !Number.isNaN(e.alpha)) {
+    return (360 - e.alpha) % 360;
+  }
+  return null;
+}

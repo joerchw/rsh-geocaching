@@ -28,3 +28,23 @@ test('angleDelta result is always within -180..180', () => {
     }
   }
 });
+
+import { normalizeHeading } from '../js/geo.js';
+
+test('normalizeHeading prefers iOS webkitCompassHeading (already absolute)', () => {
+  assert.equal(normalizeHeading({ webkitCompassHeading: 90 }), 90);
+});
+
+test('normalizeHeading converts absolute alpha to a compass heading', () => {
+  // alpha 90 (counter-clockwise from east-ish) -> compass 270
+  assert.equal(normalizeHeading({ alpha: 90, absolute: true }), 270);
+});
+
+test('normalizeHeading ignores non-absolute alpha', () => {
+  assert.equal(normalizeHeading({ alpha: 90, absolute: false }), null);
+});
+
+test('normalizeHeading returns null when no usable data', () => {
+  assert.equal(normalizeHeading({}), null);
+  assert.equal(normalizeHeading({ alpha: null, absolute: true }), null);
+});
