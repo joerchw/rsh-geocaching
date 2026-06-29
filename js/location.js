@@ -1,6 +1,8 @@
 // Browser Geolocation + DeviceOrientation wrappers.
 // Pure math lives in geo.js; this file only touches browser APIs.
 
+import { normalizeHeading } from './geo.js';
+
 export function watchLocation(onUpdate, onError) {
   if (!('geolocation' in navigator)) {
     onError(new Error('Geolocation wird von diesem Browser nicht unterstützt.'));
@@ -33,18 +35,18 @@ export async function requestOrientationPermission() {
 }
 
 // Calls onHeading(degrees 0..360, where 0 = north) when device heading changes.
-// Returns an unsubscribe function. Returns null if orientation is unsupported.
+// Prefers the absolute orientation event so the arrow is correct regardless of
+// how the phone was held when the page loaded. Returns an unsubscribe function,
+// or null if orientation is unsupported.
 export function watchHeading(onHeading) {
   if (!('DeviceOrientationEvent' in window)) return null;
+  const eventName = ('ondeviceorientationabsolute' in window)
+    ? 'deviceorientationabsolute'
+    : 'deviceorientation';
   const handler = (event) => {
-    let heading = null;
-    if (typeof event.webkitCompassHeading === 'number') {
-      heading = event.webkitCompassHeading; // iOS: already 0=N clockwise
-    } else if (typeof event.alpha === 'number') {
-      heading = (360 - event.alpha) % 360; // approximate
-    }
-    if (heading != null && !Number.isNaN(heading)) onHeading(heading);
+    const heading = normalizeHeading(event);
+    if (heading != null) onHeading(heading);
   };
-  window.addEventListener('deviceorientation', handler, true);
-  return () => window.removeEventListener('deviceorientation', handler, true);
+  window.addEventListener(eventName, handler, true);
+  return () => window.removeEventListener(eventName, handler, true);
 }
