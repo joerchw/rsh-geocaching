@@ -231,3 +231,58 @@ main { flex: 1 1 auto; overflow-y: auto; }
 .log-topbar .nav-back-btn { color: #fff; }
 .log-title { font-weight: 800; font-size: 1.1rem; }
 .log-body { flex: 1 1 auto; overflow-y: auto; padding: 1rem; }
+
+/* --- Cache-Editor-View (Schüler lokale Caches) --- */
+#view-cache-editor { padding: 0; display: flex; flex-direction: column; height: 100%; }
+
+.editor-topbar {
+  background: var(--rsh-gruen-dunkel); color: #fff;
+  display: flex; align-items: center; gap: 0.7rem;
+  padding: 0.6rem 0.9rem; flex: none;
+}
+.editor-back-btn {
+  border: none; background: none; color: #fff;
+  font-weight: 800; font-size: 1rem; cursor: pointer; padding: 0;
+}
+.editor-title { font-weight: 800; font-size: 1.1rem; }
+
+.editor-body {
+  flex: 1 1 auto; overflow-y: auto; padding: 1rem;
+  display: flex; flex-direction: column; gap: 0.7rem;
+}
+.editor-label {
+  display: block; font-size: 0.9rem; font-weight: 700; color: #555;
+}
+.editor-label .form-input { margin-top: 0.2rem; }
+
+.editor-coords-row { display: flex; gap: 0.5rem; }
+.editor-coords-row .editor-label { flex: 1; }
+
+.coord-hint { margin: 0; font-size: 0.8rem; color: #888; font-style: italic; }
+
+.btn-danger {
+  display: block; width: 100%;
+  background: #fff; color: #b00020; border: 2px solid #b00020;
+  border-radius: 10px; padding: 0.9rem 1.2rem; font-size: 1.1rem;
+  font-weight: 700; cursor: pointer;
+}
+
+/* Student-Badge in der Cache-Liste */
+.student-badge {
+  font-size: 0.7rem; background: #fff3cd; border-radius: 4px;
+  padding: 1px 4px; color: #7a5700; font-weight: 700;
+  margin-left: 0.3rem; vertical-align: middle;
+}
+.student-edit-btn {
+  border: none; background: none; font-size: 1.2rem; cursor: pointer;
+  padding: 0.2rem 0.4rem; color: var(--rsh-blau-dunkel); flex: none;
+}
+
+/* „+ Neuer Cache"-Listeneintrag am Ende der Cache-Liste */
+.cache-item-add {
+  border: 2px dashed var(--rsh-gruen); border-radius: 12px;
+  padding: 0.9rem; margin-bottom: 0.8rem;
+  text-align: center; font-weight: 800; font-size: 1.1rem;
+  color: var(--rsh-gruen-dunkel); cursor: pointer;
+}
+.cache-item-add:active { background: #f2faf0; }
