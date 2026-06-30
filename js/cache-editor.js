@@ -13,8 +13,6 @@ function showError(errEl, msg) {
   errEl.hidden = false;
 }
 
-// Opens the cache editor view. cache === null → new cache; cache object → edit mode.
-// onDoneCb is called with 'back' | 'saved' | 'deleted' when the user finishes.
 export function openCacheEditor(cache, onDoneCb) {
   onDone = onDoneCb;
   const isNew = cache === null;
@@ -38,10 +36,10 @@ export function openCacheEditor(cache, onDoneCb) {
     </label>
     <div class="editor-coords-row">
       <label class="editor-label">Breitengrad
-        <input id="ef-lat" class="form-input" value="${cache?.latitude ?? ''}" />
+        <input id="ef-lat" class="form-input" value="${esc(cache?.latitude ?? '')}" />
       </label>
       <label class="editor-label">Längengrad
-        <input id="ef-lon" class="form-input" value="${cache?.longitude ?? ''}" />
+        <input id="ef-lon" class="form-input" value="${esc(cache?.longitude ?? '')}" />
       </label>
     </div>
     <p class="coord-hint">z. B. 51.389567 oder N 51° 23.374′</p>
