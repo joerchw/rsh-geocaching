@@ -227,18 +227,26 @@ export async function renderDetail(cache, onChangedCb) {
   document.getElementById('nav-dist').textContent = '…';
   document.getElementById('nav-arrow').setAttribute('hidden', ''); // <svg>: see renderArrow
 
+  // Ad-hoc "Gehe zu" targets have no beschreibung/codewort — hide the controls that
+  // depend on them instead of showing an empty info popup or a non-functional log.
+  const hasInfo = !!cache.beschreibung;
+  document.getElementById('nav-info').hidden = !hasInfo;
   const pop = document.getElementById('nav-info-pop');
-  pop.innerHTML = `<button class="nav-info-close" type="button" aria-label="Schließen">×</button>
-                   <p>${escapeHtml(cache.beschreibung)}</p>`;
+  if (hasInfo) {
+    pop.innerHTML = `<button class="nav-info-close" type="button" aria-label="Schließen">×</button>
+                     <p>${escapeHtml(cache.beschreibung)}</p>`;
+    pop.querySelector('.nav-info-close').addEventListener('click', () => { pop.hidden = true; });
+  }
   pop.hidden = true;
-  pop.querySelector('.nav-info-close').addEventListener('click', () => { pop.hidden = true; });
 
+  const hasLog = !!cache.codewort;
+  document.getElementById('nav-log').hidden = !hasLog;
   document.getElementById('log-window').hidden = true;
 
   wireControls();
   initMap();
   renderDistance();
-  await renderLogBody();
+  if (hasLog) await renderLogBody();
 }
 
 function escapeHtml(str) {
