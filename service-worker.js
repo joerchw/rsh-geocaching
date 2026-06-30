@@ -1,5 +1,5 @@
 // Caches the app shell so the app loads offline. Map tiles stay online (network).
-const CACHE_NAME = 'rsh-geocaching-v13';
+const CACHE_NAME = 'rsh-geocaching-v14';
 const APP_SHELL = [
   '.',
   'index.html',
@@ -14,6 +14,7 @@ const APP_SHELL = [
   'js/map.js',
   'js/detail.js',
   'js/cache-editor.js',
+  'js/goto.js',
   'data/caches.json',
   'data/rules.json',
   'vendor/leaflet/leaflet.js',
