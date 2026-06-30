@@ -5,8 +5,9 @@ import { getDoneIds, clearAllProgress } from './progress.js';
 import { watchLocation, watchHeading, requestOrientationPermission } from './location.js';
 import { initMap, refreshMap, setCacheMarkers, setUserLocation, focusUser } from './map.js';
 import { renderDetail, updateDetailLocation, updateDetailHeading } from './detail.js';
+import { openCacheEditor } from './cache-editor.js';
 
-const VIEWS = ['rules', 'list', 'map', 'detail'];
+const VIEWS = ['rules', 'list', 'map', 'detail', 'cache-editor'];
 let caches = [];
 let doneIds = new Set();
 let userPos = null;
@@ -19,8 +20,8 @@ function showView(name) {
   document.querySelectorAll('.nav-btn').forEach((b) =>
     b.classList.toggle('active', b.dataset.view === name));
   // Detail is full-screen: hide the app header and bottom nav so the map fills.
-  document.querySelector('.app-header').hidden = name === 'detail';
-  document.getElementById('bottom-nav').hidden = name === 'rules' || name === 'detail';
+  document.querySelector('.app-header').hidden = name === 'detail' || name === 'cache-editor';
+  document.getElementById('bottom-nav').hidden = name === 'rules' || name === 'detail' || name === 'cache-editor';
   if (name === 'map') { refreshMap(); focusUser(); }
 }
 
@@ -54,14 +55,27 @@ function renderList() {
     li.innerHTML = `
       <span class="badge">${done ? '✅' : '⬜'}</span>
       <span class="info">
-        <span class="name">${escapeHtml(cache.name)}</span><br>
+        <span class="name">${escapeHtml(cache.name)}${cache.isStudent ? '<span class="student-badge">eigener</span>' : ''}</span><br>
         <span class="desc">${escapeHtml(cache.beschreibung)}</span>
       </span>
       <span class="dist">${dist == null ? '–' : formatDistance(dist)}</span>
+      ${cache.isStudent ? '<button class="student-edit-btn" type="button" aria-label="Bearbeiten">✏️</button>' : ''}
     `;
     li.addEventListener('click', () => openDetail(cache.id));
+    if (cache.isStudent) {
+      li.querySelector('.student-edit-btn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        startCacheEditor(cache);
+      });
+    }
     list.appendChild(li);
   }
+
+  const addLi = document.createElement('li');
+  addLi.className = 'cache-item-add';
+  addLi.textContent = '+ Neuer Cache';
+  addLi.addEventListener('click', () => startCacheEditor(null));
+  list.appendChild(addLi);
 }
 
 async function openDetail(cacheId) {
@@ -74,6 +88,22 @@ async function openDetail(cacheId) {
   });
   showView('detail');
   if (userPos) updateDetailLocation(userPos); // after the view is visible, so the map sizes correctly
+}
+
+async function startCacheEditor(cache) {
+  openCacheEditor(cache, async (event) => {
+    if (event === 'back') { showView('list'); return; }
+    try {
+      caches = await loadCaches();
+    } catch (err) {
+      console.error('Fehler beim Laden der Caches:', err);
+    }
+    doneIds = await getDoneIds();
+    renderList();
+    refreshMarkers();
+    showView('list');
+  });
+  showView('cache-editor');
 }
 
 function refreshMarkers() {
