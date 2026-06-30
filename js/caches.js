@@ -45,12 +45,40 @@ export function parseCaches(input) {
 
 export async function loadCaches(url = 'data/caches.json') {
   const override = localStorage.getItem('rsh_caches_admin');
+  let serverCaches;
   if (override) {
-    return parseCaches(override);
+    serverCaches = parseCaches(override);
+  } else {
+    const res = await fetch(url);
+    if (!res.ok) {
+      throw new Error(`caches.json konnte nicht geladen werden (HTTP ${res.status}).`);
+    }
+    serverCaches = parseCaches(await res.text());
   }
-  const res = await fetch(url);
-  if (!res.ok) {
-    throw new Error(`caches.json konnte nicht geladen werden (HTTP ${res.status}).`);
+  const studentRaw = loadStudentCaches();
+  const studentCaches = studentRaw.map((c) => ({ ...c, isStudent: true }));
+  return [...serverCaches, ...studentCaches];
+}
+
+export function loadStudentCaches() {
+  const raw = localStorage.getItem('rsh_student_caches');
+  if (!raw) return [];
+  try {
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr : [];
+  } catch {
+    return [];
   }
-  return parseCaches(await res.text());
+}
+
+export function saveStudentCaches(arr) {
+  localStorage.setItem('rsh_student_caches', JSON.stringify(arr));
+}
+
+export function generateStudentId(studentCaches) {
+  const nums = studentCaches
+    .map((c) => parseInt(c.id.replace('student-', ''), 10))
+    .filter((n) => !isNaN(n));
+  const next = nums.length ? Math.max(...nums) + 1 : 1;
+  return `student-${String(next).padStart(2, '0')}`;
 }
