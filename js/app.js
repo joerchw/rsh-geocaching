@@ -6,8 +6,9 @@ import { watchLocation, watchHeading, requestOrientationPermission } from './loc
 import { initMap, refreshMap, setCacheMarkers, setUserLocation, focusUser } from './map.js';
 import { renderDetail, updateDetailLocation, updateDetailHeading } from './detail.js';
 import { openCacheEditor } from './cache-editor.js';
+import { openGotoForm } from './goto.js';
 
-const VIEWS = ['rules', 'list', 'map', 'detail', 'cache-editor'];
+const VIEWS = ['rules', 'list', 'map', 'goto', 'detail', 'cache-editor'];
 let caches = [];
 let doneIds = new Set();
 let userPos = null;
@@ -23,6 +24,9 @@ function showView(name) {
   document.querySelector('.app-header').hidden = name === 'detail' || name === 'cache-editor';
   document.getElementById('bottom-nav').hidden = name === 'rules' || name === 'detail' || name === 'cache-editor';
   if (name === 'map') { refreshMap(); focusUser(); }
+  // Re-render the form every time the goto tab is opened, so it picks up the
+  // last-saved target and resets validation state (e.g. after coming back from nav).
+  if (name === 'goto') { openGotoForm(startGotoNav); }
 }
 
 function setGpsStatus(text) {
@@ -104,6 +108,18 @@ async function startCacheEditor(cache) {
     showView('list');
   });
   showView('cache-editor');
+}
+
+async function startGotoNav(target) {
+  // activeCacheId also drives whether startGps() forwards live GPS/heading updates
+  // to the nav view (see startGps below) — it must be truthy while this nav is open.
+  activeCacheId = target.id;
+  await requestOrientationPermission();
+  await renderDetail(target, async (event) => {
+    if (event === 'back') { activeCacheId = null; showView('goto'); }
+  });
+  showView('detail');
+  if (userPos) updateDetailLocation(userPos); // after the view is visible, so the map sizes correctly
 }
 
 function refreshMarkers() {
