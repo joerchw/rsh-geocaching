@@ -1,7 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { distanceMeters, bearingDegrees, formatDistance } from '../js/geo.js';
-import { parseCoordinate } from '../js/geo.js';
+import { distanceMeters, bearingDegrees, formatDistance, parseCoordinate } from '../js/geo.js';
 
 test('distance is zero for identical points', () => {
   assert.equal(distanceMeters(51, 7, 51, 7), 0);
@@ -44,6 +43,14 @@ test('parseCoordinate: Dezimalgrad mit N-Präfix', () => {
 
 test('parseCoordinate: Dezimalgrad mit S-Präfix → negativ', () => {
   assert.equal(parseCoordinate('S 51.389567'), -51.389567);
+});
+
+test('parseCoordinate: Dezimalgrad mit E-Präfix', () => {
+  assert.equal(parseCoordinate('E 7.702367'), 7.702367);
+});
+
+test('parseCoordinate: Dezimalgrad mit W-Präfix → negativ', () => {
+  assert.equal(parseCoordinate('W 7.702367'), -7.702367);
 });
 
 // Grad Dezimalminuten

@@ -91,6 +91,7 @@ export function parseCoordinate(str) {
     const val = parseFloat(dd[1]);
     if (!isFinite(val)) return null;
     if (card === 'S' || card === 'W') return -Math.abs(val);
+    if (card === 'N' || card === 'E') return Math.abs(val);
     return val;
   }
 
