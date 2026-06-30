@@ -52,3 +52,47 @@ export function normalizeHeading(e) {
   }
   return null;
 }
+
+// Parses a coordinate string in decimal degrees (DD) or degrees decimal minutes (GDM).
+// Accepts N/S/E/W prefixes or suffixes, comma as decimal separator, and optional
+// degree/minute symbols. Returns a number (decimal degrees) or null on invalid input.
+export function parseCoordinate(str) {
+  if (typeof str !== 'string') return null;
+  // Normalize: trim, comma→period, collapse multiple spaces
+  const s = str.trim().replace(/,/g, '.').replace(/\s+/g, ' ');
+  if (!s) return null;
+
+  // Extract and strip leading or trailing cardinal direction (N/S/E/W)
+  const preMatch = s.match(/^([NSEWnsew])\s*(.*)/);
+  const sufMatch = !preMatch ? s.match(/(.*?)\s*([NSEWnsew])$/i) : null;
+  let card = '';
+  let core = s;
+  if (preMatch) {
+    card = preMatch[1].toUpperCase();
+    core = preMatch[2].trim();
+  } else if (sufMatch) {
+    card = sufMatch[2].toUpperCase();
+    core = sufMatch[1].trim();
+  }
+
+  // Grad Dezimalminuten: DDD°MM.mmm or DDD MM.mmm (° or space as separator)
+  const gdm = core.match(/^(\d{1,3})[°\s]\s*(\d{1,2}(?:\.\d+)?)['′]?\s*$/);
+  if (gdm) {
+    const deg = parseInt(gdm[1], 10);
+    const min = parseFloat(gdm[2]);
+    if (min >= 60) return null;
+    const val = deg + min / 60;
+    return (card === 'S' || card === 'W') ? -val : val;
+  }
+
+  // Dezimalgrad: optional sign, digits, optional decimal part, optional degree symbol
+  const dd = core.match(/^([+-]?\d{1,3}(?:\.\d+)?)°?\s*$/);
+  if (dd) {
+    const val = parseFloat(dd[1]);
+    if (!isFinite(val)) return null;
+    if (card === 'S' || card === 'W') return -Math.abs(val);
+    return val;
+  }
+
+  return null;
+}
