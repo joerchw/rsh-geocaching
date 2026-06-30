@@ -34,6 +34,11 @@
       <div id="user-coords" class="coords-overlay" hidden>–</div>
     </section>
 
+    <!-- Gehe-zu view: coordinate entry, then switches to the navigation view -->
+    <section id="view-goto" class="view" hidden>
+      <div id="goto-body"></div>
+    </section>
+
     <!-- Detail / navigation view -->
     <section id="view-detail" class="view" hidden>
       <div id="nav-map" class="nav-map"></div>
@@ -94,6 +99,7 @@
     <button data-view="list" class="nav-btn">Liste</button>
     <button data-view="map" class="nav-btn">Karte</button>
     <button data-view="rules" class="nav-btn">Regeln</button>
+    <button data-view="goto" class="nav-btn">📍 Gehe zu</button>
   </nav>
 
   <!-- Leaflet must load as a classic script (global `L`) before the modules. -->
