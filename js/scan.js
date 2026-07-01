@@ -40,7 +40,7 @@ export function startQrScanner(videoEl, canvasEl, { onDecode, onInvalid, onError
           ctx.drawImage(videoEl, 0, 0, canvasEl.width, canvasEl.height);
           const imageData = ctx.getImageData(0, 0, canvasEl.width, canvasEl.height);
           const code = jsQR(imageData.data, imageData.width, imageData.height, {
-            inversionAttempts: 'dontInvert',
+            inversionAttempts: 'attemptBoth',
           });
           if (code) {
             try {
@@ -80,7 +80,7 @@ export function openScanView(onDoneCb) {
   const statusEl = document.getElementById('scan-status');
   const errorEl = document.getElementById('scan-error');
 
-  startQrScanner(video, canvas, {
+  const stop = startQrScanner(video, canvas, {
     onDecode: (cache) => {
       const existing = loadStudentCaches();
       if (isKnownCacheId(existing, cache.id)) {
@@ -102,5 +102,5 @@ export function openScanView(onDoneCb) {
     },
   });
 
-  document.getElementById('scan-back').onclick = () => onDoneCb('back');
+  document.getElementById('scan-back').onclick = () => { stop(); onDoneCb('back'); };
 }
