@@ -80,6 +80,8 @@ function slugifyUsername(username) {
   return slug || 'schueler';
 }
 
+// 4 hex chars = 65536 combinations per slug — plenty for classroom-scale sharing,
+// not designed as a general-purpose collision-resistant ID scheme.
 export function generateStudentId(username) {
   const slug = slugifyUsername(username);
   const hex = Math.random().toString(16).slice(2).padEnd(4, '0').slice(0, 4);
