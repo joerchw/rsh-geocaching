@@ -65,12 +65,34 @@ Neu: `student-<username-slug>-<4-stelliger-zufallshex>`, z. B. `student-mira-a8f
 
 - `rshCache: 1` als Marker-Feld: Scanner prüft dieses Feld zuerst; fehlt es, wird der QR-Code
   als „kein gültiger Cache-Code" abgelehnt, statt einen Fehler zu werfen.
-- Payload-Größe ~150–250 Bytes, passt bequem in einen einzelnen QR-Code (Fehlerkorrektur-Level
-  M), kein Chunking über mehrere Codes nötig.
 - Neue pure Funktionen in neuem Modul `js/qr.js`: `encodeCacheQrPayload(cache)` und
   `decodeCacheQrPayload(text)` (wirft bei ungültigem/fremdem Text, damit der Scan-Code die
   Fehlermeldung anzeigen kann). Eigenes Modul statt Erweiterung von `js/caches.js`, damit
   QR-Encoding sauber von Cache-Datenverwaltung getrennt bleibt.
+
+#### QR-Code-Größe: automatisch, mit Obergrenze
+
+`qrcode-generator` wird mit `typeNumber = 0` (Auto-Modus) und Fehlerkorrektur-Level **M**
+aufgerufen — die Library wählt selbst die kleinste Version, die den Payload noch fasst. Kurze
+Beschreibungen ergeben so automatisch einen kleinen, besonders robust scanbaren Code
+(≤ Version 15, 77×77 Module); nur lange Beschreibungen lassen den Code bis maximal
+**Version 20** (97×97 Module) wachsen. Version 20 ist beim hier vorliegenden Anwendungsfall
+(Bildschirm-zu-Kamera aus kurzer Distanz, moderne Handykameras) noch zuverlässig scanbar —
+deutlich unterhalb des technischen Maximums (Version 40).
+
+**Kürzungs-Budget:** `beschreibung` wird auf **400 Bytes** (UTF-8, gemessen **nach**
+JSON-Escaping, da `"`/`\` beim Escapen zusätzliche Bytes brauchen) begrenzt, mit „…" am Ende
+falls gekürzt wurde. Alle anderen Felder (`id`, `name`, `codewort`, `latitude`, `longitude`,
+`ersteller`) werden **nie** gekürzt. Selbst im Worst Case (langer Username/Name/Codewort,
+Fix-Overhead ~207 Bytes) bleibt der Gesamt-Payload mit 400-Byte-Beschreibung bei ~607 Bytes —
+sicher unter der Version-20-M-Kapazitätsgrenze von 666 Bytes.
+
+Typische, kurze Beschreibungen (die meisten Fälle) bleiben unter diesem Limit und lösen keine
+Kürzung aus — der QR-Code fällt dann automatisch kleiner aus (Version 15 oder darunter).
+Kürzung passiert ausschließlich in `encodeCacheQrPayload()`, betrifft nur die QR-Kopie; die
+Original-Beschreibung im `rsh_student_caches`-Eintrag des Erstellers bleibt unverändert. Wird
+gekürzt, zeigt die Teilen-Ansicht einen Hinweis „Beschreibung wird für den QR-Code gekürzt
+(X/400 Zeichen)."
 
 ---
 
@@ -120,6 +142,8 @@ Geöffnet über 📤 an einem Cache-Eintrag.
 - Zeigt: Cache-Name, „von {ersteller}", großer QR-Code (per `qrcode-generator` in ein
   `<canvas>` oder `<div>` gerendert), Hinweistext „Lass jemanden diesen Code scannen, um den
   Cache zu übernehmen".
+- Falls `encodeCacheQrPayload()` die Beschreibung gekürzt hat: zusätzlicher Hinweistext
+  „Beschreibung wird für den QR-Code gekürzt (X/400 Zeichen)." (siehe QR-Payload-Abschnitt).
 - Kein Speichern/Bearbeiten hier — reine Anzeige.
 
 ### Neue View: `#view-scan`
