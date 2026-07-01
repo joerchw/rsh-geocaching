@@ -278,12 +278,12 @@ main { flex: 1 1 auto; overflow-y: auto; }
   padding: 0.2rem 0.4rem; color: var(--rsh-blau-dunkel); flex: none;
 }
 
-/* „+ Neuer Cache"-Listeneintrag am Ende der Cache-Liste */
+/* „+ Neuer Cache" / „Scannen"-Buttons am Ende der Cache-Liste */
+.cache-item-add-row { display: flex; gap: 0.6rem; list-style: none; margin-bottom: 0.8rem; }
 .cache-item-add {
-  border: 2px dashed var(--rsh-gruen); border-radius: 12px;
-  padding: 0.9rem; margin-bottom: 0.8rem;
-  text-align: center; font-weight: 800; font-size: 1.1rem;
-  color: var(--rsh-gruen-dunkel); cursor: pointer;
+  flex: 1; border: 2px dashed var(--rsh-gruen); border-radius: 12px;
+  padding: 0.9rem; text-align: center; font-weight: 800; font-size: 1.05rem;
+  color: var(--rsh-gruen-dunkel); cursor: pointer; background: none; font-family: inherit;
 }
 .cache-item-add:active { background: #f2faf0; }
 
@@ -301,4 +301,11 @@ main { flex: 1 1 auto; overflow-y: auto; }
 .student-share-btn {
   border: none; background: none; font-size: 1.2rem; cursor: pointer;
   padding: 0.2rem 0.4rem; color: var(--rsh-blau-dunkel); flex: none;
+}
+
+/* --- Scan-View (Kamera) --- */
+#view-scan { padding: 0; display: flex; flex-direction: column; height: 100%; }
+.scan-video {
+  width: 100%; aspect-ratio: 1; object-fit: cover;
+  border-radius: 12px; background: #000;
 }

@@ -111,6 +111,15 @@
       </div>
       <div id="share-body" class="editor-body"></div>
     </section>
+
+    <!-- Scan-View (fremden Cache-QR einlesen) -->
+    <section id="view-scan" class="view" hidden>
+      <div class="editor-topbar">
+        <button id="scan-back" class="editor-back-btn" type="button">‹ Zurück</button>
+        <span class="editor-title">Cache scannen</span>
+      </div>
+      <div id="scan-body" class="editor-body"></div>
+    </section>
   </main>
 
   <nav class="bottom-nav" id="bottom-nav" hidden>
@@ -123,6 +132,7 @@
   <!-- Leaflet must load as a classic script (global `L`) before the modules. -->
   <script src="vendor/leaflet/leaflet.js"></script>
   <script src="vendor/qrcode/qrcode.js"></script>
+  <script src="vendor/jsqr/jsQR.js"></script>
   <script type="module" src="js/app.js"></script>
 </body>
 </html>

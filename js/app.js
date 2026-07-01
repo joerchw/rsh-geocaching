@@ -8,9 +8,10 @@ import { initMap, refreshMap, setCacheMarkers, setUserLocation, focusUser } from
 import { renderDetail, updateDetailLocation, updateDetailHeading } from './detail.js';
 import { openCacheEditor } from './cache-editor.js';
 import { openShareView } from './share.js';
+import { openScanView } from './scan.js';
 import { openGotoForm } from './goto.js';
 
-const VIEWS = ['rules', 'username', 'list', 'map', 'goto', 'detail', 'cache-editor', 'share'];
+const VIEWS = ['rules', 'username', 'list', 'map', 'goto', 'detail', 'cache-editor', 'share', 'scan'];
 let caches = [];
 let doneIds = new Set();
 let userPos = null;
@@ -23,8 +24,8 @@ function showView(name) {
   document.querySelectorAll('.nav-btn').forEach((b) =>
     b.classList.toggle('active', b.dataset.view === name));
   // Detail is full-screen: hide the app header and bottom nav so the map fills.
-  document.querySelector('.app-header').hidden = name === 'detail' || name === 'cache-editor' || name === 'share';
-  document.getElementById('bottom-nav').hidden = name === 'rules' || name === 'username' || name === 'detail' || name === 'cache-editor' || name === 'share';
+  document.querySelector('.app-header').hidden = name === 'detail' || name === 'cache-editor' || name === 'share' || name === 'scan';
+  document.getElementById('bottom-nav').hidden = name === 'rules' || name === 'username' || name === 'detail' || name === 'cache-editor' || name === 'share' || name === 'scan';
   if (name === 'map') { refreshMap(); focusUser(); }
   // Re-render the form every time the goto tab is opened, so it picks up the
   // last-saved target and resets validation state (e.g. after coming back from nav).
@@ -85,11 +86,15 @@ function renderList() {
     list.appendChild(li);
   }
 
-  const addLi = document.createElement('li');
-  addLi.className = 'cache-item-add';
-  addLi.textContent = '+ Neuer Cache';
-  addLi.addEventListener('click', () => startCacheEditor(null));
-  list.appendChild(addLi);
+  const addRow = document.createElement('li');
+  addRow.className = 'cache-item-add-row';
+  addRow.innerHTML = `
+    <button type="button" class="cache-item-add">+ Neuer Cache</button>
+    <button type="button" class="cache-item-add">📷 Scannen</button>
+  `;
+  addRow.children[0].addEventListener('click', () => startCacheEditor(null));
+  addRow.children[1].addEventListener('click', () => startScan());
+  list.appendChild(addRow);
 }
 
 async function openDetail(cacheId) {
@@ -123,6 +128,23 @@ async function startCacheEditor(cache) {
 function startShare(cache) {
   openShareView(cache, () => showView('list'));
   showView('share');
+}
+
+async function startScan() {
+  openScanView(async (event) => {
+    if (event === 'imported') {
+      try {
+        caches = await loadCaches();
+      } catch (err) {
+        console.error('Fehler beim Laden der Caches:', err);
+      }
+      doneIds = await getDoneIds();
+      renderList();
+      refreshMarkers();
+    }
+    showView('list');
+  });
+  showView('scan');
 }
 
 async function startGotoNav(target) {
