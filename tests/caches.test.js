@@ -85,18 +85,39 @@ test('saveStudentCaches + loadStudentCaches: round-trip', () => {
   assert.equal(loaded[0].name, 'Test');
 });
 
-test('generateStudentId: erste ID ist student-01 für leeres Array', () => {
-  assert.equal(generateStudentId([]), 'student-01');
+test('generateStudentId: Format ist student-<slug>-<4-hex>', () => {
+  const id = generateStudentId('Mira');
+  assert.match(id, /^student-mira-[0-9a-f]{4}$/);
 });
 
-test('generateStudentId: nächste ID nach student-01 ist student-02', () => {
-  assert.equal(generateStudentId([{ id: 'student-01' }]), 'student-02');
+test('generateStudentId: Username wird lowercased und Sonderzeichen entfernt', () => {
+  const id = generateStudentId('Émile-Jöhn 2!');
+  assert.match(id, /^student-[a-z0-9]{1,12}-[0-9a-f]{4}$/);
 });
 
-test('generateStudentId: ignoriert Einträge mit fremdem ID-Präfix', () => {
-  assert.equal(generateStudentId([{ id: 'cache-01' }, { id: 'cache-02' }]), 'student-01');
+test('generateStudentId: Slug wird auf 12 Zeichen gekürzt', () => {
+  const id = generateStudentId('einextremlangername');
+  const slug = id.split('-')[1];
+  assert.ok(slug.length <= 12, `slug "${slug}" sollte <= 12 Zeichen sein`);
 });
 
-test('generateStudentId: wählt max+1 auch bei Lücken', () => {
-  assert.equal(generateStudentId([{ id: 'student-03' }]), 'student-04');
+test('generateStudentId: leerer/nur-Sonderzeichen-Username → Fallback "schueler"', () => {
+  assert.match(generateStudentId('!!!'), /^student-schueler-[0-9a-f]{4}$/);
+  assert.match(generateStudentId(''), /^student-schueler-[0-9a-f]{4}$/);
+});
+
+import { isKnownCacheId } from '../js/caches.js';
+
+test('isKnownCacheId: true wenn die ID bereits vorhanden ist', () => {
+  const existing = [{ id: 'student-mira-a8f3', name: 'Am Baum' }];
+  assert.equal(isKnownCacheId(existing, 'student-mira-a8f3'), true);
+});
+
+test('isKnownCacheId: false wenn die ID noch nicht vorhanden ist', () => {
+  const existing = [{ id: 'student-mira-a8f3', name: 'Am Baum' }];
+  assert.equal(isKnownCacheId(existing, 'student-tom-1234'), false);
+});
+
+test('isKnownCacheId: false bei leerem Array', () => {
+  assert.equal(isKnownCacheId([], 'student-mira-a8f3'), false);
 });

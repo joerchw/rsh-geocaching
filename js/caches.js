@@ -75,10 +75,17 @@ export function saveStudentCaches(arr) {
   localStorage.setItem('rsh_student_caches', JSON.stringify(arr));
 }
 
-export function generateStudentId(studentCaches) {
-  const nums = studentCaches
-    .map((c) => parseInt(c.id.replace('student-', ''), 10))
-    .filter((n) => !isNaN(n));
-  const next = nums.length ? Math.max(...nums) + 1 : 1;
-  return `student-${String(next).padStart(2, '0')}`;
+function slugifyUsername(username) {
+  const slug = String(username ?? '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 12);
+  return slug || 'schueler';
+}
+
+export function generateStudentId(username) {
+  const slug = slugifyUsername(username);
+  const hex = Math.random().toString(16).slice(2).padEnd(4, '0').slice(0, 4);
+  return `student-${slug}-${hex}`;
+}
+
+export function isKnownCacheId(studentCaches, id) {
+  return studentCaches.some((c) => c.id === id);
 }

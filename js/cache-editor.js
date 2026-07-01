@@ -1,5 +1,6 @@
 import { parseCoordinate } from './geo.js';
 import { loadStudentCaches, saveStudentCaches, generateStudentId } from './caches.js';
+import { loadUsername } from './username.js';
 
 let onDone = null;
 
@@ -80,12 +81,13 @@ export function openCacheEditor(cache, onDoneCb) {
 
     const studentCaches = loadStudentCaches();
     const entry = {
-      id: cache?.id ?? generateStudentId(studentCaches),
+      id: cache?.id ?? generateStudentId(loadUsername()),
       name,
       beschreibung,
       codewort,
       latitude: lat,
       longitude: lon,
+      ersteller: cache?.ersteller ?? loadUsername(),
     };
 
     if (isNew) {
