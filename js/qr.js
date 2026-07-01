@@ -10,6 +10,8 @@ export function truncateDescriptionForQr(text, maxBytes = MAX_BESCHREIBUNG_BYTES
   const enc = new TextEncoder();
   const fits = (s) => enc.encode(JSON.stringify(s)).length <= maxBytes;
   if (fits(text)) return { text, truncated: false };
+  // A JSON string can never encode in fewer than 2 bytes (the quotes around "").
+  // maxBytes below that has no valid representable output; '' is the closest we can get.
   if (!fits('…')) return { text: '', truncated: true };
   // Binary search for the longest prefix (plus ellipsis) that still fits maxBytes.
   let lo = 0;
