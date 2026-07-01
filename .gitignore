@@ -7,6 +7,7 @@ Thumbs.db
 
 # Node (none installed, but guard anyway)
 node_modules/
+package-lock.json
 
 # Brainstorming visual-companion mockups
 .superpowers/
