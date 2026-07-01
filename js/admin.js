@@ -1,5 +1,6 @@
 // Teacher admin module — loaded only by lehrer.html, not part of the student PWA.
 import { parseCoordinate } from './geo.js';
+import { startQrScanner } from './scan.js';
 
 const ADMIN_PASSWORD = 'CacheAdmin';
 const LS_CACHES_KEY = 'rsh_caches_admin';
@@ -108,12 +109,57 @@ function showExportModal(json) {
   overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
 }
 
+// --- Scan Modal ---
+
+function showScanModal(onDecoded) {
+  const overlay = document.createElement('div');
+  overlay.style.cssText =
+    'position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:9999;padding:1rem';
+  overlay.innerHTML = `
+    <div style="background:#fff;border-radius:12px;padding:1.2rem;width:100%;max-width:420px;
+                display:flex;flex-direction:column;gap:0.8rem">
+      <h3 style="margin:0">Cache-QR scannen</h3>
+      <video id="scan-modal-video" autoplay playsinline muted
+             style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;background:#000"></video>
+      <canvas id="scan-modal-canvas" hidden></canvas>
+      <p id="scan-modal-error" class="error" hidden></p>
+      <button id="scan-modal-close" class="btn btn-ghost" style="width:100%">Abbrechen</button>
+    </div>`;
+  document.body.appendChild(overlay);
+
+  const video = document.getElementById('scan-modal-video');
+  const canvas = document.getElementById('scan-modal-canvas');
+  const errorEl = document.getElementById('scan-modal-error');
+
+  const stop = startQrScanner(video, canvas, {
+    onDecode: (cache) => {
+      overlay.remove();
+      onDecoded(cache);
+    },
+    onInvalid: () => {
+      errorEl.textContent = 'Kein gültiger Cache-Code';
+      errorEl.hidden = false;
+    },
+    onError: (msg) => {
+      errorEl.textContent = msg;
+      errorEl.hidden = false;
+    },
+  });
+
+  const close = () => { stop(); overlay.remove(); };
+  document.getElementById('scan-modal-close').addEventListener('click', close);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+}
+
 // --- Cache Tab ---
 
 function renderCacheList() {
   const panel = document.getElementById('panel-caches');
   panel.innerHTML = `
-    <button id="btn-new-cache" class="btn btn-primary btn-big" style="margin-bottom:1rem">+ Neuer Cache</button>
+    <div style="display:flex;gap:0.5rem;margin-bottom:1rem">
+      <button id="btn-new-cache" class="btn btn-primary btn-big">+ Neuer Cache</button>
+      <button id="btn-scan-cache" class="btn btn-secondary btn-big">📷 Scannen</button>
+    </div>
     <div id="cache-edit-area"></div>
     <ul id="admin-cache-list" class="cache-list" style="margin-bottom:1rem"></ul>
     <button id="btn-export-caches" class="btn btn-ghost btn-big" style="margin-bottom:0.5rem">JSON exportieren</button>
@@ -139,6 +185,18 @@ function renderCacheList() {
   }
 
   document.getElementById('btn-new-cache').addEventListener('click', () => renderCacheForm(null));
+
+  document.getElementById('btn-scan-cache').addEventListener('click', () => {
+    showScanModal((cache) => {
+      renderCacheForm({
+        name: cache.name,
+        beschreibung: cache.beschreibung,
+        codewort: cache.codewort,
+        latitude: cache.latitude,
+        longitude: cache.longitude,
+      });
+    });
+  });
 
   ul.addEventListener('click', e => {
     const editId = e.target.closest('[data-edit]')?.dataset.edit;
@@ -168,7 +226,7 @@ function renderCacheList() {
 }
 
 function renderCacheForm(cache) {
-  const isNew = cache === null;
+  const isNew = !cache?.id;
   const area = document.getElementById('cache-edit-area');
   area.innerHTML = `
     <div style="background:#f8f8f8;border-radius:12px;padding:1rem;margin-bottom:1rem;
