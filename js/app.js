@@ -1,6 +1,7 @@
 import { loadCaches } from './caches.js';
 import { distanceMeters, formatDistance } from './geo.js';
 import { loadRules, renderRules, rulesAccepted, acceptRules } from './rules.js';
+import { loadUsername, saveUsername, hasUsername, renderUsernameForm } from './username.js';
 import { getDoneIds, clearAllProgress } from './progress.js';
 import { watchLocation, watchHeading, requestOrientationPermission } from './location.js';
 import { initMap, refreshMap, setCacheMarkers, setUserLocation, focusUser } from './map.js';
@@ -8,7 +9,7 @@ import { renderDetail, updateDetailLocation, updateDetailHeading } from './detai
 import { openCacheEditor } from './cache-editor.js';
 import { openGotoForm } from './goto.js';
 
-const VIEWS = ['rules', 'list', 'map', 'goto', 'detail', 'cache-editor'];
+const VIEWS = ['rules', 'username', 'list', 'map', 'goto', 'detail', 'cache-editor'];
 let caches = [];
 let doneIds = new Set();
 let userPos = null;
@@ -22,7 +23,7 @@ function showView(name) {
     b.classList.toggle('active', b.dataset.view === name));
   // Detail is full-screen: hide the app header and bottom nav so the map fills.
   document.querySelector('.app-header').hidden = name === 'detail' || name === 'cache-editor';
-  document.getElementById('bottom-nav').hidden = name === 'rules' || name === 'detail' || name === 'cache-editor';
+  document.getElementById('bottom-nav').hidden = name === 'rules' || name === 'username' || name === 'detail' || name === 'cache-editor';
   if (name === 'map') { refreshMap(); focusUser(); }
   // Re-render the form every time the goto tab is opened, so it picks up the
   // last-saved target and resets validation state (e.g. after coming back from nav).
@@ -156,7 +157,23 @@ async function main() {
   renderRules(document.getElementById('rules-content'), ruleSections);
   document.getElementById('rules-accept').addEventListener('click', () => {
     acceptRules();
-    showView('list');
+    showView(hasUsername() ? 'list' : 'username');
+  });
+
+  // Username onboarding
+  renderUsernameForm(document.getElementById('username-body'), () => showView('list'));
+
+  function updateUsernameDisplay() {
+    document.getElementById('rules-username-display').textContent = loadUsername() || '–';
+  }
+  updateUsernameDisplay();
+  document.getElementById('rules-change-name').addEventListener('click', () => {
+    const next = prompt('Neuer Name:', loadUsername());
+    if (next === null) return;
+    const trimmed = next.trim();
+    if (!trimmed) return;
+    saveUsername(trimmed);
+    updateUsernameDisplay();
   });
 
   document.getElementById('rules-reset').addEventListener('click', async () => {
@@ -197,7 +214,7 @@ async function main() {
   renderList();
   startGps();
 
-  showView(rulesAccepted() ? 'list' : 'rules');
+  showView(rulesAccepted() ? (hasUsername() ? 'list' : 'username') : 'rules');
 
   // Register service worker (after first paint)
   if ('serviceWorker' in navigator) {

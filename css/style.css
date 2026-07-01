@@ -286,3 +286,9 @@ main { flex: 1 1 auto; overflow-y: auto; }
   color: var(--rsh-gruen-dunkel); cursor: pointer;
 }
 .cache-item-add:active { background: #f2faf0; }
+
+.link-btn {
+  border: none; background: none; color: var(--rsh-blau-dunkel);
+  font-weight: 700; text-decoration: underline; cursor: pointer;
+  padding: 0; font-size: inherit; font-family: inherit;
+}
