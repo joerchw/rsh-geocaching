@@ -10,13 +10,19 @@ export function truncateDescriptionForQr(text, maxBytes = MAX_BESCHREIBUNG_BYTES
   const enc = new TextEncoder();
   const fits = (s) => enc.encode(JSON.stringify(s)).length <= maxBytes;
   if (fits(text)) return { text, truncated: false };
-  let end = text.length;
-  let candidate = text.slice(0, end) + '…';
-  while (end > 0 && !fits(candidate)) {
-    end--;
-    candidate = text.slice(0, end) + '…';
+  if (!fits('…')) return { text: '', truncated: true };
+  // Binary search for the longest prefix (plus ellipsis) that still fits maxBytes.
+  let lo = 0;
+  let hi = text.length;
+  while (lo < hi) {
+    const mid = Math.ceil((lo + hi) / 2);
+    if (fits(text.slice(0, mid) + '…')) {
+      lo = mid;
+    } else {
+      hi = mid - 1;
+    }
   }
-  return { text: candidate, truncated: true };
+  return { text: text.slice(0, lo) + '…', truncated: true };
 }
 
 // Builds the JSON string embedded in a cache-sharing QR code. `beschreibung` is

@@ -39,6 +39,14 @@ test('truncateDescriptionForQr: respektiert ein eigenes Byte-Budget', () => {
   assert.ok(enc.encode(JSON.stringify(result.text)).length <= 20);
 });
 
+test('truncateDescriptionForQr: bleibt auch bei sehr langem Text schnell (kein O(n²))', () => {
+  const start = Date.now();
+  const result = truncateDescriptionForQr('A'.repeat(50000));
+  const elapsed = Date.now() - start;
+  assert.equal(result.truncated, true);
+  assert.ok(elapsed < 200, `Kürzung dauerte ${elapsed}ms, sollte deutlich unter 200ms liegen`);
+});
+
 test('encodeCacheQrPayload/decodeCacheQrPayload: Roundtrip erhält alle Felder', () => {
   const { text, truncated } = encodeCacheQrPayload(cache);
   assert.equal(truncated, false);
