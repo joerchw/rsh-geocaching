@@ -7,9 +7,10 @@ import { watchLocation, watchHeading, requestOrientationPermission } from './loc
 import { initMap, refreshMap, setCacheMarkers, setUserLocation, focusUser } from './map.js';
 import { renderDetail, updateDetailLocation, updateDetailHeading } from './detail.js';
 import { openCacheEditor } from './cache-editor.js';
+import { openShareView } from './share.js';
 import { openGotoForm } from './goto.js';
 
-const VIEWS = ['rules', 'username', 'list', 'map', 'goto', 'detail', 'cache-editor'];
+const VIEWS = ['rules', 'username', 'list', 'map', 'goto', 'detail', 'cache-editor', 'share'];
 let caches = [];
 let doneIds = new Set();
 let userPos = null;
@@ -22,8 +23,8 @@ function showView(name) {
   document.querySelectorAll('.nav-btn').forEach((b) =>
     b.classList.toggle('active', b.dataset.view === name));
   // Detail is full-screen: hide the app header and bottom nav so the map fills.
-  document.querySelector('.app-header').hidden = name === 'detail' || name === 'cache-editor';
-  document.getElementById('bottom-nav').hidden = name === 'rules' || name === 'username' || name === 'detail' || name === 'cache-editor';
+  document.querySelector('.app-header').hidden = name === 'detail' || name === 'cache-editor' || name === 'share';
+  document.getElementById('bottom-nav').hidden = name === 'rules' || name === 'username' || name === 'detail' || name === 'cache-editor' || name === 'share';
   if (name === 'map') { refreshMap(); focusUser(); }
   // Re-render the form every time the goto tab is opened, so it picks up the
   // last-saved target and resets validation state (e.g. after coming back from nav).
@@ -57,20 +58,28 @@ function renderList() {
     const done = doneIds.has(cache.id);
     const li = document.createElement('li');
     li.className = `cache-item${done ? ' done' : ''}`;
+    const badgeText = cache.isStudent
+      ? (cache.ersteller && cache.ersteller !== loadUsername() ? `von ${escapeHtml(cache.ersteller)}` : 'eigener')
+      : '';
     li.innerHTML = `
       <span class="badge">${done ? '✅' : '⬜'}</span>
       <span class="info">
-        <span class="name">${escapeHtml(cache.name)}${cache.isStudent ? '<span class="student-badge">eigener</span>' : ''}</span><br>
+        <span class="name">${escapeHtml(cache.name)}${cache.isStudent ? `<span class="student-badge">${badgeText}</span>` : ''}</span><br>
         <span class="desc">${escapeHtml(cache.beschreibung)}</span>
       </span>
       <span class="dist">${dist == null ? '–' : formatDistance(dist)}</span>
       ${cache.isStudent ? '<button class="student-edit-btn" type="button" aria-label="Bearbeiten">✏️</button>' : ''}
+      ${cache.isStudent ? '<button class="student-share-btn" type="button" aria-label="Teilen">📤</button>' : ''}
     `;
     li.addEventListener('click', () => openDetail(cache.id));
     if (cache.isStudent) {
       li.querySelector('.student-edit-btn').addEventListener('click', (e) => {
         e.stopPropagation();
         startCacheEditor(cache);
+      });
+      li.querySelector('.student-share-btn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        startShare(cache);
       });
     }
     list.appendChild(li);
@@ -109,6 +118,11 @@ async function startCacheEditor(cache) {
     showView('list');
   });
   showView('cache-editor');
+}
+
+function startShare(cache) {
+  openShareView(cache, () => showView('list'));
+  showView('share');
 }
 
 async function startGotoNav(target) {

@@ -292,3 +292,13 @@ main { flex: 1 1 auto; overflow-y: auto; }
   font-weight: 700; text-decoration: underline; cursor: pointer;
   padding: 0; font-size: inherit; font-family: inherit;
 }
+
+/* --- Teilen-View (QR-Code) --- */
+#view-share { padding: 0; display: flex; flex-direction: column; height: 100%; }
+.qr-container { display: flex; justify-content: center; margin: 0.8rem 0; }
+.qr-container svg { width: 100%; max-width: 280px; height: auto; }
+
+.student-share-btn {
+  border: none; background: none; font-size: 1.2rem; cursor: pointer;
+  padding: 0.2rem 0.4rem; color: var(--rsh-blau-dunkel); flex: none;
+}
