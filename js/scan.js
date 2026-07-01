@@ -19,7 +19,7 @@ export function startQrScanner(videoEl, canvasEl, { onDecode, onInvalid, onError
   }
 
   if (!navigator.mediaDevices?.getUserMedia) {
-    onError('Scannen wird auf diesem Gerät nicht unterstützt.');
+    onError?.('Scannen wird auf diesem Gerät nicht unterstützt.');
     return stop;
   }
 
@@ -29,7 +29,7 @@ export function startQrScanner(videoEl, canvasEl, { onDecode, onInvalid, onError
       stream = s;
       videoEl.srcObject = stream;
       videoEl.setAttribute('playsinline', 'true');
-      videoEl.play();
+      videoEl.play().catch(() => onError?.('Kamera-Vorschau konnte nicht gestartet werden.'));
       const ctx = canvasEl.getContext('2d');
 
       const tick = () => {
@@ -46,7 +46,7 @@ export function startQrScanner(videoEl, canvasEl, { onDecode, onInvalid, onError
             try {
               const cache = decodeCacheQrPayload(code.data);
               stop();
-              onDecode(cache);
+              onDecode?.(cache);
               return;
             } catch {
               onInvalid?.();
@@ -58,7 +58,7 @@ export function startQrScanner(videoEl, canvasEl, { onDecode, onInvalid, onError
       rafId = requestAnimationFrame(tick);
     })
     .catch(() => {
-      onError('Kamera-Zugriff verweigert. Bitte erlaube den Kamera-Zugriff in den Browser-Einstellungen.');
+      onError?.('Kamera-Zugriff verweigert. Bitte erlaube den Kamera-Zugriff in den Browser-Einstellungen.');
     });
 
   return stop;
