@@ -1,4 +1,5 @@
 // Teacher admin module — loaded only by lehrer.html, not part of the student PWA.
+import { parseCoordinate } from './geo.js';
 
 const ADMIN_PASSWORD = 'CacheAdmin';
 const LS_CACHES_KEY = 'rsh_caches_admin';
@@ -49,10 +50,10 @@ function validateCacheForm({ name, beschreibung, codewort, latitude, longitude }
   if (!name.trim()) return 'Name darf nicht leer sein.';
   if (!beschreibung.trim()) return 'Beschreibung darf nicht leer sein.';
   if (!codewort.trim()) return 'Codewort darf nicht leer sein.';
-  const lat = parseFloat(latitude);
-  const lon = parseFloat(longitude);
-  if (isNaN(lat) || lat < -90 || lat > 90) return 'Breitengrad ungültig (−90 bis 90).';
-  if (isNaN(lon) || lon < -180 || lon > 180) return 'Längengrad ungültig (−180 bis 180).';
+  const lat = parseCoordinate(latitude);
+  const lon = parseCoordinate(longitude);
+  if (lat === null || lat < -90 || lat > 90) return 'Breitengrad ungültig. z. B. 51.389567 oder N 51° 23.374′';
+  if (lon === null || lon < -180 || lon > 180) return 'Längengrad ungültig. z. B. 7.702367 oder E 7° 42.142′';
   return null;
 }
 
@@ -182,16 +183,15 @@ function renderCacheForm(cache) {
       <label style="display:block;margin-bottom:0.6rem">Codewort
         <input id="f-code" class="form-input" value="${esc(cache?.codewort ?? '')}">
       </label>
-      <div style="display:flex;gap:0.5rem;margin-bottom:0.6rem">
+      <div style="display:flex;gap:0.5rem;margin-bottom:0.3rem">
         <label style="flex:1">Breitengrad
-          <input id="f-lat" class="form-input" type="number" step="0.000001"
-                 value="${cache?.latitude ?? ''}">
+          <input id="f-lat" class="form-input" value="${esc(String(cache?.latitude ?? ''))}">
         </label>
         <label style="flex:1">Längengrad
-          <input id="f-lon" class="form-input" type="number" step="0.000001"
-                 value="${cache?.longitude ?? ''}">
+          <input id="f-lon" class="form-input" value="${esc(String(cache?.longitude ?? ''))}">
         </label>
       </div>
+      <p style="margin:0 0 0.6rem;font-size:0.85rem;color:#555">z. B. 51.389567 oder N 51° 23.374′</p>
       <button id="btn-gps" class="btn btn-ghost" style="width:100%;margin-bottom:0.8rem">
         📍 GPS-Position übernehmen
       </button>
@@ -231,8 +231,8 @@ function renderCacheForm(cache) {
       name: formData.name.trim(),
       beschreibung: formData.beschreibung.trim(),
       codewort: formData.codewort.trim(),
-      latitude: parseFloat(formData.latitude),
-      longitude: parseFloat(formData.longitude),
+      latitude: parseCoordinate(formData.latitude),
+      longitude: parseCoordinate(formData.longitude),
     };
     if (isNew) {
       adminCaches.push(entry);
