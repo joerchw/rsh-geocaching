@@ -13,6 +13,8 @@ export function openShareView(cache, onDoneCb) {
   document.getElementById('share-back').onclick = () => onDoneCb();
 
   const { text, truncated } = encodeCacheQrPayload(cache);
+  // qrcode(...) is a global provided by vendor/qrcode/qrcode.js (classic <script>,
+  // loaded in index.html before this module) — not an import.
   const qr = qrcode(0, 'M');
   qr.addData(text);
   qr.make();
