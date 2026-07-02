@@ -84,16 +84,31 @@ main { flex: 1 1 auto; overflow-y: auto; }
   border-radius: 12px;
   padding: 0.9rem;
   margin-bottom: 0.8rem;
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
   cursor: pointer;
 }
 .cache-item.done { border-color: var(--rsh-gruen); background: #f2faf0; }
-.cache-item .info { flex: 1 1 auto; min-width: 0; }
-.cache-item .name { font-weight: 700; font-size: 1.1rem; }
-.cache-item .dist { font-size: 1.6rem; font-weight: 800; color: var(--rsh-blau-dunkel); white-space: nowrap; }
-.badge { font-size: 1.5rem; }
+
+.cache-row1 { display: flex; align-items: center; gap: 0.7rem; }
+.cache-row2 {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #eef2f6;
+}
+
+.cache-check {
+  width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--rsh-grau);
+  flex: none; display: flex; align-items: center; justify-content: center;
+  font-size: 0.8rem; color: #fff; font-weight: 800;
+}
+.cache-check.done { border-color: var(--rsh-gruen-dunkel); background: var(--rsh-gruen-dunkel); }
+
+.cache-item .info { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 0.3rem; }
+.cache-item .name {
+  font-weight: 700; font-size: 1.1rem; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.cache-item .dist { font-size: 0.95rem; font-weight: 700; color: var(--rsh-blau-dunkel); white-space: nowrap; }
+
+.cache-actions { display: flex; gap: 0.1rem; }
 
 .bottom-nav {
   display: flex;
@@ -270,7 +285,7 @@ main { flex: 1 1 auto; overflow-y: auto; }
 .student-badge {
   font-size: 0.7rem; background: #fff3cd; border-radius: 4px;
   padding: 1px 4px; color: #7a5700; font-weight: 700;
-  margin-left: 0.3rem; vertical-align: middle;
+  flex: none;
 }
 .student-edit-btn {
   border: none; background: none; font-size: 1.2rem; cursor: pointer;

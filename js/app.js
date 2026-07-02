@@ -63,13 +63,20 @@ function renderList() {
       ? (cache.ersteller && cache.ersteller !== loadUsername() ? `von ${escapeHtml(cache.ersteller)}` : 'eigener')
       : '';
     li.innerHTML = `
-      <span class="badge">${done ? '✅' : '⬜'}</span>
-      <span class="info">
-        <span class="name">${escapeHtml(cache.name)}${cache.isStudent ? `<span class="student-badge">${badgeText}</span>` : ''}</span>
-      </span>
-      <span class="dist">${dist == null ? '–' : formatDistance(dist)}</span>
-      ${cache.isStudent ? '<button class="student-edit-btn" type="button" aria-label="Bearbeiten">✏️</button>' : ''}
-      ${cache.isStudent ? '<button class="student-share-btn" type="button" aria-label="Teilen">📤</button>' : ''}
+      <div class="cache-row1">
+        <span class="cache-check${done ? ' done' : ''}">${done ? '✓' : ''}</span>
+        <span class="info">
+          <span class="name">${escapeHtml(cache.name)}</span>
+          ${cache.isStudent ? `<span class="student-badge">${badgeText}</span>` : ''}
+        </span>
+      </div>
+      <div class="cache-row2">
+        <span class="dist">${dist == null ? '–' : formatDistance(dist)}</span>
+        ${cache.isStudent ? `<span class="cache-actions">
+          <button class="student-edit-btn" type="button" aria-label="Bearbeiten">✏️</button>
+          <button class="student-share-btn" type="button" aria-label="Teilen">📤</button>
+        </span>` : ''}
+      </div>
     `;
     li.addEventListener('click', () => openDetail(cache.id));
     if (cache.isStudent) {
