@@ -104,9 +104,13 @@ export async function publishFile(path, content, commitMessage) {
     throw new Error('Token ungültig oder ohne Schreibrecht. Bitte neuen Token eingeben und erneut versuchen.');
   }
   if (!getRes.ok) {
-    throw new Error(`Datei konnte nicht geladen werden (HTTP ${getRes.status}).`);
+    const getBody = await getRes.json().catch(() => ({}));
+    throw new Error(`Datei konnte nicht geladen werden: ${getBody.message || `HTTP ${getRes.status}`}`);
   }
-  const { sha } = await getRes.json();
+  const { sha } = await getRes.json().catch(() => ({}));
+  if (!sha) {
+    throw new Error('Datei konnte nicht geladen werden (unerwartete Antwort von GitHub).');
+  }
 
   const putRes = await githubRequest(path, token, {
     method: 'PUT',
