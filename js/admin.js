@@ -127,7 +127,7 @@ function showShareModal(cache) {
     <div style="background:#fff;border-radius:12px;padding:1.2rem;width:100%;max-width:420px;
                 display:flex;flex-direction:column;gap:0.8rem;align-items:center">
       <h3 style="margin:0">${esc(cache.name)}</h3>
-      <div style="width:100%;max-width:280px">${svg}</div>
+      <div class="qr-container">${svg}</div>
       <p style="margin:0;font-size:0.9rem;color:#555;text-align:center">
         Lass jemanden diesen Code scannen, um den Cache zu übernehmen
       </p>
