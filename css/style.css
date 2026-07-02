@@ -90,9 +90,8 @@ main { flex: 1 1 auto; overflow-y: auto; }
   cursor: pointer;
 }
 .cache-item.done { border-color: var(--rsh-gruen); background: #f2faf0; }
-.cache-item .info { flex: 1 1 auto; }
+.cache-item .info { flex: 1 1 auto; min-width: 0; }
 .cache-item .name { font-weight: 700; font-size: 1.1rem; }
-.cache-item .desc { color: #555; font-size: 0.95rem; }
 .cache-item .dist { font-size: 1.6rem; font-weight: 800; color: var(--rsh-blau-dunkel); white-space: nowrap; }
 .badge { font-size: 1.5rem; }
 

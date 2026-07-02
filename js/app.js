@@ -65,8 +65,7 @@ function renderList() {
     li.innerHTML = `
       <span class="badge">${done ? '✅' : '⬜'}</span>
       <span class="info">
-        <span class="name">${escapeHtml(cache.name)}${cache.isStudent ? `<span class="student-badge">${badgeText}</span>` : ''}</span><br>
-        <span class="desc">${escapeHtml(cache.beschreibung)}</span>
+        <span class="name">${escapeHtml(cache.name)}${cache.isStudent ? `<span class="student-badge">${badgeText}</span>` : ''}</span>
       </span>
       <span class="dist">${dist == null ? '–' : formatDistance(dist)}</span>
       ${cache.isStudent ? '<button class="student-edit-btn" type="button" aria-label="Bearbeiten">✏️</button>' : ''}
