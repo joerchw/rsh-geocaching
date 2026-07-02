@@ -1,6 +1,8 @@
 // Teacher admin module — loaded only by lehrer.html, not part of the student PWA.
 import { parseCoordinate } from './geo.js';
 import { startQrScanner } from './scan.js';
+import { encodeCacheQrPayload, MAX_BESCHREIBUNG_BYTES } from './qr.js';
+import './qrcode-setup.js';
 
 const ADMIN_PASSWORD = 'CacheAdmin';
 const LS_CACHES_KEY = 'rsh_caches_admin';
@@ -109,6 +111,37 @@ function showExportModal(json) {
   overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
 }
 
+// --- Share Modal ---
+
+function showShareModal(cache) {
+  const { text, truncated } = encodeCacheQrPayload(cache);
+  const qr = qrcode(0, 'M');
+  qr.addData(text);
+  qr.make();
+  const svg = qr.createSvgTag(6, 4);
+
+  const overlay = document.createElement('div');
+  overlay.style.cssText =
+    'position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:9999;padding:1rem';
+  overlay.innerHTML = `
+    <div style="background:#fff;border-radius:12px;padding:1.2rem;width:100%;max-width:420px;
+                display:flex;flex-direction:column;gap:0.8rem;align-items:center">
+      <h3 style="margin:0">${esc(cache.name)}</h3>
+      <div style="width:100%;max-width:280px">${svg}</div>
+      <p style="margin:0;font-size:0.9rem;color:#555;text-align:center">
+        Lass jemanden diesen Code scannen, um den Cache zu übernehmen
+      </p>
+      ${truncated ? `<p style="margin:0;font-size:0.85rem;color:#555;text-align:center">
+        Beschreibung wird für den QR-Code gekürzt (${cache.beschreibung.length}/${MAX_BESCHREIBUNG_BYTES} Zeichen).
+      </p>` : ''}
+      <button id="share-modal-close" class="btn btn-ghost" style="width:100%">Schließen</button>
+    </div>`;
+  document.body.appendChild(overlay);
+
+  document.getElementById('share-modal-close').addEventListener('click', () => overlay.remove());
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+}
+
 // --- Scan Modal ---
 
 function showScanModal(onDecoded) {
@@ -174,6 +207,8 @@ function renderCacheList() {
       <div style="display:flex;justify-content:space-between;align-items:center">
         <strong>${esc(cache.name)}</strong>
         <div style="display:flex;gap:0.4rem">
+          <button class="btn btn-secondary" data-share="${esc(cache.id)}"
+                  style="padding:0.35rem 0.75rem;font-size:0.9rem">📤</button>
           <button class="btn btn-secondary" data-edit="${esc(cache.id)}"
                   style="padding:0.35rem 0.75rem;font-size:0.9rem">✏️</button>
           <button class="btn btn-ghost" data-delete="${esc(cache.id)}"
@@ -199,8 +234,13 @@ function renderCacheList() {
   });
 
   ul.addEventListener('click', e => {
+    const shareId = e.target.closest('[data-share]')?.dataset.share;
     const editId = e.target.closest('[data-edit]')?.dataset.edit;
     const deleteId = e.target.closest('[data-delete]')?.dataset.delete;
+    if (shareId) {
+      const cache = adminCaches.find(c => c.id === shareId);
+      if (cache) showShareModal(cache);
+    }
     if (editId) {
       renderCacheForm(adminCaches.find(c => c.id === editId) ?? null);
     }
