@@ -117,6 +117,29 @@ fehlgeschlagener Veröffentlichen-Versuch verliert nie lokale Änderungen.
 
 ---
 
+## Verlauf / Wiederherstellung
+
+Da „Veröffentlichen" echte Commits auf GitHub erzeugt, ist die komplette
+Versionshistorie beider Dateien automatisch vorhanden — jede vorherige Version bleibt
+erhalten und lässt sich über GitHub wiederherstellen, auch nach einem versehentlichen
+Löschen. Damit das für eine Lehrkraft ohne Git-Kenntnisse nutzbar ist, bekommt jeder
+Tab (Caches, Regeln) einen Link „Verlauf ansehen" neben dem Veröffentlichen-Button, der
+die GitHub-Commit-Historie der jeweiligen Datei in einem neuen Tab öffnet:
+
+- Caches: `https://github.com/joerchw/rsh-geocaching/commits/main/data/caches.json`
+- Regeln: `https://github.com/joerchw/rsh-geocaching/commits/main/data/rules.json`
+
+Kein eigener Code für Backup/Wiederherstellung nötig — der Link macht nur die ohnehin
+vorhandene Git-Historie sichtbar und nutzbar. Von dort kann die Lehrkraft eine ältere
+Version ansehen und ihren Inhalt zurückkopieren (GitHub zeigt bei jeder Commit-Version
+einen „Raw"/Rohdaten-Link zum Kopieren).
+
+Lokale, noch nicht veröffentlichte Änderungen deckt das nicht ab — dafür bleibt
+weiterhin „Serverversion wiederherstellen" zuständig (verwirft alle lokalen Änderungen
+auf einmal, kein selektives Undo einzelner Schritte).
+
+---
+
 ## Sicherheit
 
 Der Token liegt nur in `localStorage` des Lehrer-Geräts, vergleichbar einem
@@ -148,4 +171,4 @@ Schaden bei Kompromittierung auf das absolute Minimum.
 |-------|----------|
 | `js/github-publish.js` | Neu: Token-Verwaltung, Token-Modal, `publishFile()`, `utf8ToBase64()` |
 | `tests/github-publish.test.js` | Neu: Tests für `utf8ToBase64()` (ASCII + Umlaute) und die Token-`localStorage`-Wrapper |
-| `js/admin.js` | „JSON exportieren" → „Veröffentlichen" in beiden Tabs; `showExportModal` entfernt; „Token ändern"-Link |
+| `js/admin.js` | „JSON exportieren" → „Veröffentlichen" in beiden Tabs; `showExportModal` entfernt; „Token ändern"- und „Verlauf ansehen"-Links |
