@@ -73,15 +73,19 @@ export function promptForToken() {
 }
 
 async function githubRequest(path, token, options = {}) {
-  return fetch(`${API_BASE}/${path}`, {
-    ...options,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/vnd.github+json',
-      'X-GitHub-Api-Version': '2022-11-28',
-      ...(options.headers || {}),
-    },
-  });
+  try {
+    return await fetch(`${API_BASE}/${path}`, {
+      ...options,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+        ...(options.headers || {}),
+      },
+    });
+  } catch {
+    throw new Error('Keine Verbindung zu GitHub möglich. Bitte Internetverbindung prüfen und erneut versuchen.');
+  }
 }
 
 // Publishes `content` to `path` (e.g. 'data/caches.json') on the configured branch,
