@@ -252,9 +252,25 @@ async function main() {
 
   showView(rulesAccepted() ? (hasUsername() ? 'list' : 'username') : 'rules');
 
+  document.getElementById('update-banner-btn').addEventListener('click', () => {
+    window.location.reload();
+  });
+
   // Register service worker (after first paint)
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js').catch(() => {});
+    navigator.serviceWorker.register('service-worker.js').then((reg) => {
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+        if (!newWorker) return;
+        newWorker.addEventListener('statechange', () => {
+          // A controller already existing means this page was running an older
+          // version — on a first-ever install there's no prior controller yet.
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            document.getElementById('update-banner').hidden = false;
+          }
+        });
+      });
+    }).catch(() => {});
   }
 }
 
