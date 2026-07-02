@@ -3,6 +3,7 @@ import { parseCoordinate } from './geo.js';
 import { startQrScanner } from './scan.js';
 import { encodeCacheQrPayload, MAX_BESCHREIBUNG_BYTES } from './qr.js';
 import './qrcode-setup.js';
+import { publishFile, clearGithubToken, promptForToken } from './github-publish.js';
 
 const ADMIN_PASSWORD = 'CacheAdmin';
 const LS_CACHES_KEY = 'rsh_caches_admin';
@@ -72,43 +73,6 @@ function showTab(tab) {
   document.getElementById('tab-regeln').classList.toggle('active', tab === 'regeln');
   document.getElementById('panel-caches').hidden = tab !== 'caches';
   document.getElementById('panel-regeln').hidden = tab !== 'regeln';
-}
-
-// --- Export Modal ---
-
-function showExportModal(json) {
-  const overlay = document.createElement('div');
-  overlay.style.cssText =
-    'position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:9999;padding:1rem';
-  overlay.innerHTML = `
-    <div style="background:#fff;border-radius:12px;padding:1.2rem;width:100%;max-width:500px;
-                max-height:80vh;display:flex;flex-direction:column;gap:0.8rem">
-      <h3 style="margin:0">JSON exportieren</h3>
-      <p style="margin:0;font-size:0.9rem;color:#555">
-        Kopiere diesen Text und füge ihn auf GitHub in die entsprechende Datei ein.
-      </p>
-      <textarea style="flex:1;min-height:200px;font-family:monospace;font-size:0.8rem;
-                       border:2px solid #ccc;border-radius:8px;padding:0.6rem;resize:vertical"
-                readonly>${esc(json)}</textarea>
-      <div style="display:flex;gap:0.5rem">
-        <button id="modal-copy" class="btn btn-primary" style="flex:1">Kopieren</button>
-        <button id="modal-close" class="btn btn-ghost" style="flex:1">Schließen</button>
-      </div>
-    </div>`;
-  document.body.appendChild(overlay);
-
-  document.getElementById('modal-copy').addEventListener('click', async () => {
-    try {
-      await navigator.clipboard.writeText(json);
-      const btn = document.getElementById('modal-copy');
-      btn.textContent = 'Kopiert!';
-      setTimeout(() => { btn.textContent = 'Kopieren'; }, 1500);
-    } catch {
-      alert('Clipboard nicht verfügbar – bitte manuell kopieren.');
-    }
-  });
-  document.getElementById('modal-close').addEventListener('click', () => overlay.remove());
-  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
 }
 
 // --- Share Modal ---
@@ -195,7 +159,12 @@ function renderCacheList() {
     </div>
     <div id="cache-edit-area"></div>
     <ul id="admin-cache-list" class="cache-list" style="margin-bottom:1rem"></ul>
-    <button id="btn-export-caches" class="btn btn-ghost btn-big" style="margin-bottom:0.5rem">JSON exportieren</button>
+    <button id="btn-publish-caches" class="btn btn-primary btn-big" style="margin-bottom:0.5rem">Veröffentlichen</button>
+    <div style="display:flex;gap:1rem;margin-bottom:0.8rem;font-size:0.85rem">
+      <a href="https://github.com/joerchw/rsh-geocaching/commits/main/data/caches.json"
+         target="_blank" rel="noopener" class="link-btn">Verlauf ansehen</a>
+      <button id="btn-token-caches" type="button" class="link-btn">Token ändern</button>
+    </div>
     <button id="btn-restore-caches" class="btn btn-ghost btn-big">Serverversion wiederherstellen</button>`;
 
   const ul = document.getElementById('admin-cache-list');
@@ -254,8 +223,29 @@ function renderCacheList() {
     }
   });
 
-  document.getElementById('btn-export-caches').addEventListener('click', () =>
-    showExportModal(JSON.stringify(adminCaches, null, 2)));
+  document.getElementById('btn-publish-caches').addEventListener('click', async () => {
+    const btn = document.getElementById('btn-publish-caches');
+    btn.disabled = true;
+    btn.textContent = 'Veröffentliche…';
+    try {
+      await publishFile(
+        'data/caches.json',
+        JSON.stringify(adminCaches, null, 2),
+        'chore: update caches.json via Lehrerbereich'
+      );
+      btn.textContent = 'Veröffentlicht!';
+      setTimeout(() => { btn.textContent = 'Veröffentlichen'; btn.disabled = false; }, 1500);
+    } catch (err) {
+      btn.textContent = 'Veröffentlichen';
+      btn.disabled = false;
+      if (err.message !== 'Abgebrochen.') alert(err.message);
+    }
+  });
+
+  document.getElementById('btn-token-caches').addEventListener('click', () => {
+    clearGithubToken();
+    promptForToken().catch(() => {});
+  });
 
   document.getElementById('btn-restore-caches').addEventListener('click', () => {
     if (confirm('Serverversion wiederherstellen? Alle lokalen Änderungen gehen verloren.')) {
@@ -353,9 +343,14 @@ function renderRulesList() {
     <button id="btn-add-section" class="btn btn-ghost btn-big" style="margin-bottom:1rem">
       + Neuer Abschnitt
     </button>
-    <button id="btn-export-rules" class="btn btn-ghost btn-big" style="margin-bottom:0.5rem">
-      JSON exportieren
+    <button id="btn-publish-rules" class="btn btn-primary btn-big" style="margin-bottom:0.5rem">
+      Veröffentlichen
     </button>
+    <div style="display:flex;gap:1rem;margin-bottom:0.8rem;font-size:0.85rem">
+      <a href="https://github.com/joerchw/rsh-geocaching/commits/main/data/rules.json"
+         target="_blank" rel="noopener" class="link-btn">Verlauf ansehen</a>
+      <button id="btn-token-rules" type="button" class="link-btn">Token ändern</button>
+    </div>
     <button id="btn-restore-rules" class="btn btn-ghost btn-big">Serverversion wiederherstellen</button>`;
 
   const area = document.getElementById('rules-edit-area');
@@ -369,8 +364,29 @@ function renderRulesList() {
     renderRulesList();
   });
 
-  document.getElementById('btn-export-rules').addEventListener('click', () =>
-    showExportModal(JSON.stringify(adminRules, null, 2)));
+  document.getElementById('btn-publish-rules').addEventListener('click', async () => {
+    const btn = document.getElementById('btn-publish-rules');
+    btn.disabled = true;
+    btn.textContent = 'Veröffentliche…';
+    try {
+      await publishFile(
+        'data/rules.json',
+        JSON.stringify(adminRules, null, 2),
+        'chore: update rules.json via Lehrerbereich'
+      );
+      btn.textContent = 'Veröffentlicht!';
+      setTimeout(() => { btn.textContent = 'Veröffentlichen'; btn.disabled = false; }, 1500);
+    } catch (err) {
+      btn.textContent = 'Veröffentlichen';
+      btn.disabled = false;
+      if (err.message !== 'Abgebrochen.') alert(err.message);
+    }
+  });
+
+  document.getElementById('btn-token-rules').addEventListener('click', () => {
+    clearGithubToken();
+    promptForToken().catch(() => {});
+  });
 
   document.getElementById('btn-restore-rules').addEventListener('click', () => {
     if (confirm('Serverversion wiederherstellen? Alle lokalen Änderungen gehen verloren.')) {
