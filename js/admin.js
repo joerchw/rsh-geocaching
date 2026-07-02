@@ -169,7 +169,7 @@ function renderCacheList() {
   for (const cache of adminCaches) {
     const li = document.createElement('li');
     li.className = 'cache-item';
-    li.style.cssText = 'flex-direction:column;align-items:stretch;gap:0.3rem';
+    li.style.cssText = 'display:flex;flex-direction:column;align-items:stretch;gap:0.3rem';
     li.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:center">
         <strong>${esc(cache.name)}</strong>
