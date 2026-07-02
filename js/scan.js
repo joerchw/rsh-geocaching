@@ -82,6 +82,7 @@ export function openScanView(onDoneCb) {
 
   const stop = startQrScanner(video, canvas, {
     onDecode: (cache) => {
+      errorEl.hidden = true;
       const existing = loadStudentCaches();
       if (isKnownCacheId(existing, cache.id)) {
         statusEl.textContent = 'Cache schon vorhanden';
