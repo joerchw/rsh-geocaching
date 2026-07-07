@@ -1,37 +1,5 @@
 [
   {
-    "id": "cache-01",
-    "name": "Lecker Brötchen",
-    "beschreibung": "Bäckerei an der Grünstraße 2 in Schwerte.",
-    "latitude": 51.4468606,
-    "longitude": 7.5828795,
-    "codewort": "Brötchen"
-  },
-  {
-    "id": "cache-02",
-    "name": "Der Strang",
-    "beschreibung": "Testpunkt – Der Strang.",
-    "latitude": 51.44344,
-    "longitude": 7.586905,
-    "codewort": "Strang"
-  },
-  {
-    "id": "cache-03",
-    "name": "Doktor Zahn",
-    "beschreibung": "Testpunkt – Doktor Zahn.",
-    "latitude": 51.4434368,
-    "longitude": 7.5869054,
-    "codewort": "Zahn"
-  },
-  {
-    "id": "cache-04",
-    "name": "Volme Brücke",
-    "beschreibung": "Brücke über die Volme.",
-    "latitude": 51.35144,
-    "longitude": 7.484669,
-    "codewort": "Wasser"
-  },
-  {
     "id": "cache-05",
     "name": "Blauregen",
     "beschreibung": "Beim Blauregen.",
