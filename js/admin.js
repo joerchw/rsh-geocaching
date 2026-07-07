@@ -14,13 +14,27 @@ let adminRules = [];
 
 // --- Data ---
 
+// GitHub Pages serves data/*.json with `Cache-Control: max-age=600` — the ?t=
+// query bypasses the browser's HTTP cache so callers always see the version
+// currently deployed, not one up to 10 minutes stale.
+async function fetchServerFile(path) {
+  const res = await fetch(`${path}?t=${Date.now()}`);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return { data: await res.json(), lastModified: res.headers.get('Last-Modified') };
+}
+
+function formatGermanDateTime(httpDateStr) {
+  const d = new Date(httpDateStr);
+  if (isNaN(d)) return '';
+  return d.toLocaleString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
 async function loadAdminCaches() {
   const override = localStorage.getItem(LS_CACHES_KEY);
   if (override) {
     try { return JSON.parse(override); } catch {}
   }
-  const res = await fetch('data/caches.json');
-  return res.json();
+  return (await fetchServerFile('data/caches.json')).data;
 }
 
 async function loadAdminRules() {
@@ -28,8 +42,7 @@ async function loadAdminRules() {
   if (override) {
     try { return JSON.parse(override); } catch {}
   }
-  const res = await fetch('data/rules.json');
-  return res.json();
+  return (await fetchServerFile('data/rules.json')).data;
 }
 
 function saveAdminCaches(arr) {
@@ -246,10 +259,19 @@ function renderCacheList() {
     promptForToken().catch(() => {});
   });
 
-  document.getElementById('btn-restore-caches').addEventListener('click', () => {
-    if (confirm('Serverversion wiederherstellen? Alle lokalen Änderungen gehen verloren.')) {
+  document.getElementById('btn-restore-caches').addEventListener('click', async () => {
+    let result;
+    try {
+      result = await fetchServerFile('data/caches.json');
+    } catch (err) {
+      alert('Serverversion konnte nicht geladen werden.');
+      return;
+    }
+    const versionText = result.lastModified ? ` (Stand ${formatGermanDateTime(result.lastModified)})` : '';
+    if (confirm(`Serverversion${versionText} wiederherstellen? Alle lokalen Änderungen gehen verloren.`)) {
       localStorage.removeItem(LS_CACHES_KEY);
-      loadAdminCaches().then(data => { adminCaches = data; renderCacheList(); });
+      adminCaches = result.data;
+      renderCacheList();
     }
   });
 }
@@ -392,10 +414,19 @@ function renderRulesList() {
     promptForToken().catch(() => {});
   });
 
-  document.getElementById('btn-restore-rules').addEventListener('click', () => {
-    if (confirm('Serverversion wiederherstellen? Alle lokalen Änderungen gehen verloren.')) {
+  document.getElementById('btn-restore-rules').addEventListener('click', async () => {
+    let result;
+    try {
+      result = await fetchServerFile('data/rules.json');
+    } catch (err) {
+      alert('Serverversion konnte nicht geladen werden.');
+      return;
+    }
+    const versionText = result.lastModified ? ` (Stand ${formatGermanDateTime(result.lastModified)})` : '';
+    if (confirm(`Serverversion${versionText} wiederherstellen? Alle lokalen Änderungen gehen verloren.`)) {
       localStorage.removeItem(LS_RULES_KEY);
-      loadAdminRules().then(data => { adminRules = data; renderRulesList(); });
+      adminRules = result.data;
+      renderRulesList();
     }
   });
 }

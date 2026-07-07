@@ -99,9 +99,13 @@ export async function publishFile(path, content, commitMessage) {
   }
 
   const getRes = await githubRequest(`${path}?ref=${BRANCH}`, token);
-  if (getRes.status === 401 || getRes.status === 403) {
+  if (getRes.status === 401) {
     clearGithubToken();
-    throw new Error('Token ungültig oder ohne Schreibrecht. Bitte neuen Token eingeben und erneut versuchen.');
+    throw new Error('Token ungültig oder abgelaufen. Bitte neuen Token eingeben und erneut versuchen.');
+  }
+  if (getRes.status === 403 || getRes.status === 404) {
+    clearGithubToken();
+    throw new Error('Kein Lesezugriff auf das Repository mit diesem Token. Beim Anlegen des Tokens „Repository access" auf rsh-geocaching und „Permissions → Contents" auf mindestens „Read-only" setzen.');
   }
   if (!getRes.ok) {
     const getBody = await getRes.json().catch(() => ({}));
@@ -122,9 +126,13 @@ export async function publishFile(path, content, commitMessage) {
       branch: BRANCH,
     }),
   });
-  if (putRes.status === 401 || putRes.status === 403) {
+  if (putRes.status === 401) {
     clearGithubToken();
-    throw new Error('Token ungültig oder ohne Schreibrecht. Bitte neuen Token eingeben und erneut versuchen.');
+    throw new Error('Token ungültig oder abgelaufen. Bitte neuen Token eingeben und erneut versuchen.');
+  }
+  if (putRes.status === 403) {
+    clearGithubToken();
+    throw new Error('Token hat kein Schreibrecht für dieses Repository. Beim Anlegen des Tokens unter „Permissions → Contents" „Read and write" auswählen (nicht nur „Read-only").');
   }
   if (putRes.status === 409) {
     throw new Error('Die Datei wurde inzwischen anderswo geändert. Bitte Seite neu laden und erneut versuchen.');
