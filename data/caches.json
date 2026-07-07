@@ -70,5 +70,13 @@
     "codewort": "Stumpf",
     "latitude": 51.388966,
     "longitude": 7.702127
+  },
+  {
+    "id": "cache-15",
+    "name": "Mensa",
+    "beschreibung": "An der Nensa",
+    "codewort": "Brötchen",
+    "latitude": 51.389101,
+    "longitude": 7.702741
   }
 ]
