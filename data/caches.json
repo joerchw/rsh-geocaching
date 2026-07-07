@@ -35,8 +35,8 @@
     "id": "cache-05",
     "name": "Blauregen",
     "beschreibung": "Beim Blauregen.",
-    "latitude": 51.389700,
-    "longitude": 7.701800,
+    "latitude": 51.3897,
+    "longitude": 7.7018,
     "codewort": "Giftig"
   },
   {
@@ -75,7 +75,7 @@
     "id": "cache-10",
     "name": "Klettergerüst",
     "beschreibung": "Am Klettergerüst.",
-    "latitude": 51.388900,
+    "latitude": 51.3889,
     "longitude": 7.701883,
     "codewort": "Orange"
   },
@@ -83,8 +83,8 @@
     "id": "cache-11",
     "name": "Stadion",
     "beschreibung": "Im Stadion.",
-    "latitude": 51.390000,
-    "longitude": 7.702550,
+    "latitude": 51.39,
+    "longitude": 7.70255,
     "codewort": "Weitsprung"
   },
   {
@@ -99,7 +99,7 @@
     "id": "cache-13",
     "name": "Rondell",
     "beschreibung": "Am Rondell.",
-    "latitude": 51.389650,
+    "latitude": 51.38965,
     "longitude": 7.700967,
     "codewort": "Rund"
   }
