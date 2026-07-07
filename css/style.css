@@ -1,6 +1,7 @@
 :root {
   --rsh-gruen: #62B24F;
   --rsh-gruen-dunkel: #3C8A5B;
+  --rsh-rot-dunkel: #A6392B;
   --rsh-blau: #6E9AC8;
   --rsh-blau-dunkel: #2F4D6E;
   --rsh-grau: #9E9E9E;
@@ -166,6 +167,16 @@ main { flex: 1 1 auto; overflow-y: auto; }
 .admin-tabs button.active {
   color: var(--rsh-gruen-dunkel);
   border-bottom: 3px solid var(--rsh-gruen-dunkel);
+}
+
+/* Lehrerbereich: rot statt grün als Grundfarbe, zur Unterscheidung von der Schülerversion */
+body.lehrer .app-header,
+body.lehrer .btn-primary {
+  background: var(--rsh-rot-dunkel);
+}
+body.lehrer .admin-tabs button.active {
+  color: var(--rsh-rot-dunkel);
+  border-bottom-color: var(--rsh-rot-dunkel);
 }
 
 /* --- Navigation (Detail) view: full-screen map with overlay bars --- */

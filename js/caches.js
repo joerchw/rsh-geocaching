@@ -43,21 +43,9 @@ export function parseCaches(input) {
   });
 }
 
-export async function loadCaches(url = 'data/caches.json') {
-  const override = localStorage.getItem('rsh_caches_admin');
-  let serverCaches;
-  if (override) {
-    serverCaches = parseCaches(override);
-  } else {
-    const res = await fetch(url);
-    if (!res.ok) {
-      throw new Error(`caches.json konnte nicht geladen werden (HTTP ${res.status}).`);
-    }
-    serverCaches = parseCaches(await res.text());
-  }
+export async function loadCaches() {
   const studentRaw = loadStudentCaches();
-  const studentCaches = studentRaw.map((c) => ({ ...c, isStudent: true }));
-  return [...serverCaches, ...studentCaches];
+  return studentRaw.map((c) => ({ ...c, isStudent: true }));
 }
 
 export function loadStudentCaches() {

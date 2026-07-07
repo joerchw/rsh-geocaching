@@ -157,7 +157,6 @@ function renderCacheList() {
       <button id="btn-new-cache" class="btn btn-primary btn-big">+ Neuer Cache</button>
       <button id="btn-scan-cache" class="btn btn-secondary btn-big">📷 Scannen</button>
     </div>
-    <div id="cache-edit-area"></div>
     <ul id="admin-cache-list" class="cache-list" style="margin-bottom:1rem"></ul>
     <button id="btn-publish-caches" class="btn btn-primary btn-big" style="margin-bottom:0.5rem">Veröffentlichen</button>
     <div style="display:flex;gap:1rem;margin-bottom:0.8rem;font-size:0.85rem">
@@ -257,10 +256,13 @@ function renderCacheList() {
 
 function renderCacheForm(cache) {
   const isNew = !cache?.id;
-  const area = document.getElementById('cache-edit-area');
-  area.innerHTML = `
-    <div style="background:#f8f8f8;border-radius:12px;padding:1rem;margin-bottom:1rem;
-                border:2px solid var(--rsh-blau)">
+
+  const overlay = document.createElement('div');
+  overlay.style.cssText =
+    'position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:9999;padding:1rem';
+  overlay.innerHTML = `
+    <div style="background:#fff;border-radius:12px;padding:1.2rem;width:100%;max-width:480px;
+                max-height:90vh;overflow-y:auto;border:2px solid var(--rsh-blau)">
       <h3 style="margin:0 0 0.8rem">${isNew ? 'Neuer Cache' : 'Cache bearbeiten'}</h3>
       <label style="display:block;margin-bottom:0.6rem">Name
         <input id="f-name" class="form-input" value="${esc(cache?.name ?? '')}">
@@ -289,6 +291,7 @@ function renderCacheForm(cache) {
         <button id="btn-cancel" class="btn btn-ghost" style="flex:1">Abbrechen</button>
       </div>
     </div>`;
+  document.body.appendChild(overlay);
 
   document.getElementById('btn-gps').addEventListener('click', () => {
     navigator.geolocation.getCurrentPosition(
@@ -300,7 +303,8 @@ function renderCacheForm(cache) {
     );
   });
 
-  document.getElementById('btn-cancel').addEventListener('click', () => { area.innerHTML = ''; });
+  document.getElementById('btn-cancel').addEventListener('click', () => overlay.remove());
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
 
   document.getElementById('btn-save').addEventListener('click', () => {
     const formData = {
@@ -329,7 +333,7 @@ function renderCacheForm(cache) {
       if (idx !== -1) adminCaches[idx] = entry;
     }
     saveAdminCaches(adminCaches);
-    area.innerHTML = '';
+    overlay.remove();
     renderCacheList();
   });
 }
